@@ -1,0 +1,178 @@
+$container-max-widths: (
+    xs: 420px,
+    sm: 580px,
+    md: 900px,
+    lg: 960px,
+    xl: 1100px,
+    xxl: 1400px
+);
+
+$grid-breakpoints: (
+    xxs: 0,
+    xs: 425px,
+    sm: 600px,
+    md: 960px,
+    lg: 1024px,
+    xl: 1280px,
+    xxl: 1920px
+);
+
+/*$primary: rgb(66, 117, 183);
+$secondary: #9da5b1;
+$success: #2eb85c;
+$info: #39f;
+$warning: #f9b115;
+$danger: #e55353;
+$light: #ebedef;
+$dark: #212121;
+$gray: #8a93a2;
+$gray-dark: #636f83;
+$white: #fff;*/
+
+$primary: rgb(29, 36, 90); /*#007bff;*/
+$secondary: #6c757d;
+$success: rgb(8,95,53);
+$info: #39f;
+$warning: rgb(248, 191, 50);
+$danger: rgb(215, 44, 0);
+$light: #ebedef;
+$light-ultra: #f3f4f5;
+$dark: #212121;
+$gray: #8a93a2;
+$gray-dark: rgb(88, 88, 88);
+$white: #fff;
+
+$theme-colors: (
+    "primary":     $primary,
+    "secondary":   $secondary,
+    "success":     $success,
+    "info":        $info,
+    "warning":     $warning,
+    "danger":      $danger,
+    "light":       $light,
+    "light-ultra": $light-ultra,
+    "dark":        $dark,
+    "gray":        $gray,
+    "gray-dark":   $gray-dark,
+    "white":       $white,
+);
+
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #6c757d;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+
+$grays: (
+    "100": $gray-100,
+    "200": $gray-200,
+    "300": $gray-300,
+    "400": $gray-400,
+    "500": $gray-500,
+    "600": $gray-600,
+    "700": $gray-700,
+    "800": $gray-800,
+    "900": $gray-900
+);
+
+$utilities: () !default;    
+
+$utilities: map-merge(
+  (
+    "grays": (
+      property: background-color,
+      class: background-color,
+      values: $grays
+    ),
+    "text-grays": (
+      property: color,
+      class: text-gray,
+      values: $grays
+    )
+  ),
+  $utilities
+);
+
+$spacer: 1rem !default;
+$spacers: () !default;
+$spacers: map-merge(
+    (
+        0: 0,
+        1: ($spacer * .25),
+        2: ($spacer * .5),
+        3: $spacer,
+        4: ($spacer * 1.5),
+        5: ($spacer * 3),
+        6: ($spacer * 4.5),
+        7: ($spacer * 6),
+        8: ($spacer * 7.5),
+        9: ($spacer * 9),
+        10: ($spacer * 10.5),
+        11: ($spacer * 12),
+        12: ($spacer * 13.5),
+        13: ($spacer * 15),
+        14: ($spacer * 16.5),
+        15: ($spacer * 18),
+        16: ($spacer * 19.5),
+        17: ($spacer * 21),
+        18: ($spacer * 22.5),
+        19: ($spacer * 24),
+        20: ($spacer * 25.5),
+    ),
+    $spacers
+);
+
+$sizes: (
+    20: 20%,
+    25: 25%,
+    33: 33%,
+    50: 50%,
+    75: 75%,
+    100: 100%,
+);
+
+$border-radius: 0.5rem;
+
+$spinner-width:           3.5rem;
+$spinner-height:          $spinner-width;
+$spinner-vertical-align:  -.125em;
+$spinner-border-width:    .4em;
+$spinner-animation-speed: 1s;
+
+$spinner-width-sm:        1rem;
+$spinner-height-sm:       $spinner-width-sm;
+$spinner-border-width-sm: .2em;
+
+$border-width:            1px !default;
+$input-btn-border-width:  $border-width !default;
+$input-border-width:      $input-btn-border-width !default;
+$input-height-border:     $input-border-width * 2 !default;
+$line-height-base:        1.5 !default;
+
+$font-size-base:          .875rem !default;
+//$font-size-base:          1rem !default;
+$font-size-sm:            $font-size-base * .875 !default;
+
+$sm-padding-y:            .25rem !default;
+$sm-padding-x:            .5rem !default;
+$sm-border-radius:        .2rem !default;
+
+$btn-padding-y:           $sm-padding-y;
+$btn-padding-x:           $sm-padding-x;
+$btn-font-size:           $font-size-sm !default;
+$btn-border-radius:       $sm-border-radius;
+
+$input-padding-y:         $sm-padding-y;
+$input-padding-x:         $sm-padding-x;
+$input-font-size:         $font-size-sm;
+$input-border-radius:     $sm-border-radius;
+$input-height-sm:         add($line-height-base * 1em, add($sm-padding-y * 2, $input-height-border, false));
+
+$table-cell-padding-y-sm: .25rem;
+$table-cell-padding-x-sm: .25rem;
+$table-cell-padding-y:    $table-cell-padding-y-sm !default;
+$table-cell-padding-x:    $table-cell-padding-x-sm !default;

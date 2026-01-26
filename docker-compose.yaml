@@ -1,0 +1,15 @@
+services:
+  afg-strive:
+    build: .
+    container_name: afg-strive
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    ports:
+      - 1020:80
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    external: true

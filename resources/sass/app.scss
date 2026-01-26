@@ -1,0 +1,12 @@
+//CoreUI
+// If you want to override variables do it here
+@import 'variables';
+
+// If you want to add something do it here
+@import 'custom';
+
+// Import styles
+@import '~@coreui/coreui-pro/scss/coreui';
+@import 'layout';
+
+

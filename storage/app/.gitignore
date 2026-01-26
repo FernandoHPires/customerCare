@@ -1,0 +1,5 @@
+*
+!public/
+!keys/
+!keys/*.asc
+!.gitignore
