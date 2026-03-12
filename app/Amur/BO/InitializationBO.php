@@ -789,7 +789,7 @@ class InitializationBO {
                     $this->createPiece();
                 }
 
-                $mortgageId = $this->createMortgage( //diego
+                $mortgageId = $this->createMortgage(
                     $applicationId,
                     $savedQuoteId,
                     $company,

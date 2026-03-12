@@ -11,4 +11,5 @@ class UsersTable extends Model {
     protected $table = 'users_table';
     protected $primaryKey = 'user_id';
 
+
 }

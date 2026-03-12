@@ -1,7 +1,7 @@
 <template>
     <div class="d-flex flex-row-reverse">
         <div>
-            <span>Welcome,</span>
+            <span>Seja bem vindo!</span>
             <h5>{{ user.fullName }}</h5>
         </div>
     </div>

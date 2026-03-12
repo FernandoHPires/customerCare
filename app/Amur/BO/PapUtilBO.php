@@ -50,10 +50,10 @@ class PapUtilBO {
                 count($arrayValues_1970) > 0
             ) {
                 if ($execution == 'First') {
-                    $toAddresses = ['danny@amurgroup.ca','daniel@amurgroup.ca','penny@amurfinancialgroup.ca','diego@amurgroup.ca'];
+                    $toAddresses = [''];
 
                 } else {
-                    $toAddresses = ['danny@amurgroup.ca','daniel@amurgroup.ca','penny@amurfinancialgroup.ca','sonal@amurgroup.ca','it@amurgroup.ca'];
+                    $toAddresses = [''];
                 }
                 
                 $subject = 'PAP bank file alert';

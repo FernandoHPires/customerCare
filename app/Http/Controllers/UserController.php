@@ -99,6 +99,7 @@ class UserController extends Controller {
     }
 
     public function getMenus(Request $request) {
+
         $userId = Auth::user()->user_id;
 
         $userBO = new UserBO($this->logger);

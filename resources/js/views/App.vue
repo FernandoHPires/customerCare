@@ -4,13 +4,13 @@
     </template>
 
     <template v-else-if="currentPage !== ''">
-        <div v-bind:class="['sidebar sidebar-dark sidebar-fixed bg-gray', (arrayStartsWith(collapseMenuRoutes, currentPage)) ? 'sidebar-narrow-unfoldable' : '']" id="sidebar">
+        <div v-bind:class="['sidebar sidebar-dark sidebar-fixed bg-brand', (arrayStartsWith(collapseMenuRoutes, currentPage)) ? 'sidebar-narrow-unfoldable' : '']" id="sidebar">
             
             <div class="sidebar-header">
                 <div class="sidebar-brand w-100">
                     <div class="sidebar-brand-full text-center">
                         <div class="d-flex align-items-center justify-content-center h-100">
-                            <a href="/"><img width="110" src="/images/logo.png" /></a>
+                            <a href="/"><img width="110" src="/images/uniLogoPequena.png" /></a>
                         </div>
                     </div>
 
@@ -59,7 +59,7 @@
         </div>
 
         <div class="wrapper d-flex flex-column min-vh-100 bg-light-ultra">
-            <header class="header header-sticky bg-light mb-4">
+            <header class="header header-sticky bg-brand-light mb-4">
                 <div class="container-fluid">
                     <button
                         class="header-toggler px-md-0 me-md-3 d-md-none text-dark"
@@ -76,18 +76,10 @@
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-end pt-0">
-                                <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">Setup</div>
+                                <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">Configurações</div>
 
                                 <a class="dropdown-item" href="#" @click="toPage('/accounts')">
-                                    <i class="bi bi-bag me-2"></i>Account
-                                </a>
-
-                                <a class="dropdown-item" href="#" @click="toPage('/billing')">
-                                    <i class="bi bi-cash me-2"></i>Billing
-                                </a>
-
-                                <a class="dropdown-item" href="#" @click="toPage('/profile')">
-                                    <i class="bi bi-file-person me-2"></i>Profile
+                                    <i class="bi bi-bag me-2"></i>Alterar minha senha
                                 </a>
 
                                 <hr class="dropdown-divider">
@@ -109,8 +101,8 @@
 
             <footer class="footer" v-if="currentPage == '/'">
                 <div>
-                    <a href="https://amurfinancialgroup.ca" target="_blank"
-                        >Amur Financial Group</a
+                    <a href="https://unigestaodenegocios.com.br" target="_blank"
+                        >UNI - Gestão de Negócios</a
                     >
                     &copy; {{ year }}
                 </div>
@@ -294,6 +286,9 @@ export default {
             .then((response) => {
                 if (this.checkApiResponse(response)) {
                     this.user = response.data.data
+
+                    console.log('Current User:', this.user)
+
                     this.setUser(this.user)
                 }
             })
@@ -309,12 +304,9 @@ export default {
             })
             .then((response) => {
                 if(this.checkApiResponse(response)) {
-                    this.menus = response.data.data
-                    
-                    //this.showSidebar()
-                    //this.toggleSidebar()
-                    //console.log(document.getElementById("toggleSidebar").click())
+                    this.menus = response.data.data                    
                 }
+                console.log(this.menus)
             })
             .catch((error) => {
                 console.log(error)
@@ -345,3 +337,20 @@ export default {
     },
 }
 </script>
+<style scoped>
+    .bg-brand {
+        background-color: #1C4D64 !important;
+    }
+    .bg-brand-light {
+        background-color: #255E78 !important;
+    }
+    .bg-brand-lighter {
+        background-color: #2F6F8C !important;
+    }
+    .footer {
+        background-color: #f5f7f9;
+        color: #1C4D64;
+        border-top: 1px solid #dce3e8;
+    }    
+</style>
+

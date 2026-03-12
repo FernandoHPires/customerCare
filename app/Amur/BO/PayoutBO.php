@@ -357,8 +357,7 @@ class PayoutBO {
                 $payment->processing_date = $value->processing_date;
                 $payment->flag            = $value->flag;
                 $payment->payment_amount  = $value->pmt_amt;
-                //Ask Diego, if children cards need payout_payments table record?
-                //$payment->save();
+
 
                 $userId = Auth::user()->user_id ?? null; 
                 $fields = ['flag' => 'Zero payment', 'pmt_amt' => 0, 'updated_by' => $userId];

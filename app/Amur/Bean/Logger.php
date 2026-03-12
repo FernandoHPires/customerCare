@@ -21,7 +21,7 @@ class Logger implements ILogger {
 
         if(env('APP_ENV') == 'production') {
             Utils::sendEmail(
-                ['diego@amurgroup.ca','fernando@amurgroup.ca'],
+                ['fhpires9@gmail.com'],
                 env('APP_ENV') . ' - Strive Error',
                 $this->getSessionKey() . ' ' . $message . "\n\n" . json_encode($fields)
             );

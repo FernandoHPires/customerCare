@@ -48,22 +48,24 @@ class UserBO {
     }
 
     public function show($id) {
+
         $userObj = UsersTable::query()
-            ->where('user_id', $id)
-            ->first();
+        ->where('user_id', $id)
+        ->first();
 
         $user = array();
+
         if ($userObj) {
             $user = [
                 'id' => $userObj->user_id,
                 'username' => $userObj->user_name,
-                'fullName' => $userObj->user_fname . ' ' . $userObj->user_lname,
-                'firstName' => $userObj->user_fname,
-                'lastName' => $userObj->user_lname,
+                'fullName' => $userObj->user_full_name,
+                'firstName' => $userObj->user_full_name,
+                'lastName' => $userObj->user_full_name,
                 'email' => $userObj->user_email,
-                'trackerManager' => $userObj->doctracker_manager,
-                'trackerView' => $userObj->doctracker_view,
-                'isAdmin' => $userObj->admin,
+                'trackerManager' => '',
+                'trackerView' => '',
+                'isAdmin' => '',
                 'companyId' => $userObj->default_company_id
             ];
         }
@@ -227,11 +229,12 @@ class UserBO {
 
     public function getMenus($userId) {
 
+        $this->logger->info('UserBO->getMenus',[$userId]);
+
         $fullMenu = $this->getMenu();
 
         $gm = GroupMembersTable::query()
         ->where('user_id', $userId)
-        ->where('deleted', 0)
         ->get();
 
         foreach ($gm as $key => $value) {

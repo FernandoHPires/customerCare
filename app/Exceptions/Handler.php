@@ -42,7 +42,7 @@ class Handler extends ExceptionHandler
                 $sessionKey = session('session_key');
 
                 Utils::sendEmail(
-                    ['diego@amurgroup.ca','fernando@amurgroup.ca'],
+                    ['fhpires9@gmail.com'],
                     env('APP_ENV') . ' - Strive Error',
                     $sessionKey . ' | ' . $e->getMessage() . ' | ' . $e->getTraceAsString()
                 );

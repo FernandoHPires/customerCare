@@ -4,14 +4,13 @@
     <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-        <meta name="description" content="Amur Financial Group">
 
-        <!--<link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
-        <link rel="manifest" href="images/favicon/site.webmanifest">-->
-        
-        <title>Amur Financial Group</title>
+        <meta name="description" content="Gestão de Negócios">
+
+        <link rel="icon" type="image/png" href="/images/Favicon_Prancheta-1-150x150.png">
+
+        <title>Gestão de Negócios</title>
+
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700%7CRoboto:400,700" rel="stylesheet">
 <style>
     * {

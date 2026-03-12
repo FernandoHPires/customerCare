@@ -7,19 +7,19 @@
                         <div class="card col-md-7 p-4 mb-0">
                             <div class="card-body">
                                 <h3>Login</h3>
-                                <p class="text-medium-emphasis">Sign In to your account</p>
+                                <p class="text-medium-emphasis">Entre com seu usuário e senha</p>
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">
                                         <i class="bi-person"></i>
                                     </span>
-                                    <input class="form-control" type="text" placeholder="Username" v-model="username">
+                                    <input class="form-control" type="text" placeholder="Usuário" v-model="username">
                                 </div>
 
                                 <div class="input-group mb-4">
                                     <span class="input-group-text">
                                         <i class="bi-key"></i>
                                     </span>
-                                    <input class="form-control" type="password" placeholder="Password" v-on:keyup.enter="login" v-model="password">
+                                    <input class="form-control" type="password" placeholder="Senha" v-on:keyup.enter="login" v-model="password">
                                 </div>
 
                                 <div class="row">
@@ -33,18 +33,10 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="card col-md-5 text-white bg-primary py-5">
-                            <div class="card-body text-center">
-                                <div class="d-flex flex-column justify-content-center align-items-center h-100">
-                                    <div>
-                                        <h2>Strive</h2>
-                                    </div>
-                                    <div>
-                                        <p>Amur Financial Group</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="card col-md-5 p-0">                            
+                            <img src="/images/uniLogo.png"
+                            class="login-image"
+                            alt="UNI Gestão de Negócios">
                         </div>
                     </div>
                 </div>
@@ -94,3 +86,11 @@ export default {
     }
 }
 </script>
+<style scoped>
+.login-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+</style>
