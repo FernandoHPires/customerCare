@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Amur\Bean\Logger;
-use App\Amur\BO\LoginBO;
+use App\AUni\Bean\Logger;
+use App\AUni\BO\LoginBO;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

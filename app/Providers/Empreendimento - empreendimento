@@ -1,0 +1,26 @@
+Empreendimento - empreendimento
+Nº de Unidades para Venda - unidades_venda
+Aquisição Terreno R$ - valor_aquisicao_terreno
+Aquisição Terreno % - percentual_aquisicao_terreno
+% Unidades Permuta Física Financeira - percentual_permuta_fisica
+Área Total m² - area_total_m2
+Valor Previsto Estimado - valor_previsto
+VGV - vgv
+Exposição de Caixa VP - exposicao_caixa
+Resultado Líquido (VPL) - resultado_liquido
+Obra R$ - valor_custo_obra
+Obra % - percentual_custo_obra
+Comissões R$ - valor_comissao
+Comissões % - percentual_comissao
+Tributos R$ - valor_tributo
+Tributos % - percentual_tributo
+Incorporação R$ - valor_incorporacao
+Incorporação % - percentual_incorporacao
+Marketing R$ - valor_marketing
+Marketing % - percentual_marketing
+Despesas Obra R$ - valor_despesa_obra
+Despesas Obra % - percentual_despesa_obra
+Despesas Vendas R$ - valor_despesa_venda
+Despesas Vendas % - percentual_despesa_venda
+Administração R$ - valor_administracao
+Administração % - percentual_administracao
