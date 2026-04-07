@@ -7,7 +7,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use App\Amur\Factory\Factory;
+use App\AUni\Factory\Factory;
 
 class PapProcessPaymentFileQueue implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

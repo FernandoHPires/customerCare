@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-use App\Amur\Utilities\Utils;
+use App\AUni\Utilities\Utils;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use Illuminate\Validation\ValidationException;

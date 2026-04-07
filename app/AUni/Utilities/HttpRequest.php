@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Amur\Utilities;
+namespace App\AUni\Utilities;
 
-use App\Amur\Bean\ILogger;
+use App\AUni\Bean\ILogger;
 
 class HttpRequest {
 

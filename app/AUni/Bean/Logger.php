@@ -3,7 +3,7 @@
 namespace App\AUni\Bean;
 
 use Illuminate\Support\Facades\Log;
-use App\Amur\Utilities\Utils;
+use App\AUni\Utilities\Utils;
 use Illuminate\Support\Facades\Session;
 
 class Logger implements ILogger {

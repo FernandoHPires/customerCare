@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Amur\Bean\Logger;
-use App\Amur\Bean\Response;
-use App\Amur\BO\UserBO;
+use App\AUni\Bean\Logger;
+use App\AUni\Bean\Response;
+use App\AUni\BO\UserBO;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Amur\BO\BrokerBO;
+use App\AUni\BO\BrokerBO;
 
 class UserController extends Controller {
 

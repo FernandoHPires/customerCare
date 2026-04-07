@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Amur\Utilities;
+namespace App\AUni\Utilities;
 
-use App\Amur\Bean\DB;
-use App\Amur\Bean\Logger;
+use App\AUni\Bean\DB;
+use App\AUni\Bean\Logger;
 use Illuminate\Support\Facades\Log;
 
 class Utils {

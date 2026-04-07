@@ -1,0 +1,138 @@
+<?php
+
+namespace App\AUni\BO;
+
+use App\AUni\Bean\ILogger;
+use App\AUni\Bean\IDB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\UsersTable;
+use App\Models\Viabilidades;
+use App\Models\Empreendimentos;
+use App\Models\Clientes;
+
+
+class PortifolioBO {
+
+    private $logger;
+    private $db;
+    
+
+    public function __construct(ILogger $logger, IDB $db) {
+        $this->logger = $logger;
+        $this->db = $db;
+    }
+
+    public function getPortfolio() {
+
+        $userId = Auth::user()->user_id;
+
+        $usersTable = UsersTable::Query()
+        ->where('user_id', $userId)
+        ->first();
+
+        if ($usersTable) {    
+            $data = [
+                'userId' => $usersTable->user_id,
+                'company' => $usersTable->default_company_id
+            ];
+        } else {
+            $data = [
+                'userId' => 0,
+                'company' => 0
+            ];
+        }
+        
+        return $data;
+    }
+
+    public function getPortfolioView() {
+
+        $this->logger->info("PortifolioBO->getPortfolioView");
+
+        $porfilioView = array();
+
+        $userId = Auth::user()->user_id;
+
+        $usersTable = UsersTable::Query()
+        ->where('user_id', $userId)
+        ->first();
+
+        if ($usersTable) {
+
+            $companyId = $usersTable->default_company_id;
+
+            $clientes = Clientes::find($companyId);
+
+            if ($clientes) {
+
+                $empreendimentos = Empreendimentos::query()
+                ->where('cliente_id', $clientes->id)
+                ->get();
+
+                foreach ($empreendimentos as $empreendimento) {
+
+                    $viabilidade = Viabilidades::query()
+                    ->where('empreendimento_id', $empreendimento->id)
+                    ->where('status', 'A')
+                    ->first();
+
+                    if (!$viabilidade) {
+                        continue;
+                    }
+
+                    $porfilioView[] = [
+                        'empreendimentoId' => $empreendimento->id,
+                        'viabilidadeId' => $viabilidade->id,
+                        'clienteId' => $empreendimento->cliente_id,
+                        'nome' => $empreendimento->nome,
+                        'cidade' => $empreendimento->cidade,
+                        'uf' => $empreendimento->uf,
+                        'tipoProduto' => $empreendimento->tipo_produto,
+                        'totalUnidades' => $empreendimento->total_unidades,
+                        'unidadesPermutadas' => $empreendimento->unidades_permutadas,
+                        'unidadesVenda' => $viabilidade->unidades_venda,
+                        'valorAquisicaoTerreno' => $viabilidade->valor_aquisicao_terreno,
+                        'percentualAquisicaoTerreno' => $viabilidade->percentual_aquisicao_terreno,
+                        'percentualPermutaFisica' => $viabilidade->percentual_permuta_fisica,
+                        'areaTotalM2' => $viabilidade->area_total_m2,
+                        'valorPrevisto' => $viabilidade->valor_previsto,
+                        'vgv' => $viabilidade->vgv,
+                        'exposicaoCaixa' => $viabilidade->exposicao_caixa,
+                        'resultadoLiquido' => $viabilidade->resultado_liquido,
+                        'participacaoResultados' => $empreendimento->participacao_resultados,
+                        'percentualResultadoLiquido' => $empreendimento->percentual_resultado_liquido,
+                        'tirAa' => $empreendimento->tir_aa,
+                        'mtir' => $empreendimento->mtir,
+                        'percentualCustoObra' => $viabilidade->percentual_custo_obra,
+                        'valorCustoObra' => $viabilidade->valor_custo_obra,
+                        'percentualComissao' => $viabilidade->percentual_comissao,
+                        'valorComissao' => $viabilidade->valor_comissao,
+                        'percentualTributo' => $viabilidade->percentual_tributo,
+                        'valorTributo' => $viabilidade->valor_tributo,
+                        'percentualIncorporacao' => $viabilidade->percentual_incorporacao,
+                        'valorIncorporacao' => $viabilidade->valor_incorporacao,
+                        'percentualMarketing' => $viabilidade->percentual_marketing,
+                        'valorMarketing' => $viabilidade->valor_marketing,
+                        'percentualDespesaObra' => $viabilidade->percentual_despesa_obra,
+                        'valorDespesaObra' => $viabilidade->valor_despesa_obra,
+                        'percentualDespesaVenda' => $viabilidade->percentual_despesa_venda,
+                        'valorDespesaVenda' => $viabilidade->valor_despesa_venda,
+                        'percentualAdministracao' => $viabilidade->percentual_administracao,
+                        'valorAdministracao' => $viabilidade->valor_administracao,
+                        'percentualParticipacaoSpe' => $empreendimento->percentual_participacao_spe,
+                        'valorParticipacaoSpe' => $empreendimento->valor_participacao_spe,
+                        'faseAtual' => $empreendimento->fase_atual,
+                        'previsaoLancamento' => $empreendimento->previsao_lancamento,
+                        'previsaoInicioObras' => $empreendimento->previsao_inicio_obras,
+                        'previsaoEntrega' => $empreendimento->previsao_entrega,
+                        'statusEmpreendimento' => $empreendimento->status_empreendimento
+                    ];
+                }
+            }
+        }
+        
+        return $porfilioView;
+    }        
+
+    
+}

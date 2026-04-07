@@ -23,10 +23,10 @@
 
                 <div class="modal-footer">
                     <button class="btn btn-outline-dark" type="button" @click="cancel()">
-                        <i class="bi-x-lg me-1"></i>Cancel
+                        <i class="bi-x-lg me-1"></i>Cancelar
                     </button>
                     <button v-bind:class="['btn', type == 'success' ? 'btn-success' : 'btn-danger']" type="button" @click="confirm()">
-                        <i class="bi-check-lg me-1"></i>Confirm
+                        <i class="bi-check-lg me-1"></i>Confirmar
                     </button>
                 </div>
             </div>

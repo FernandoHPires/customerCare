@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Amur\BO\AccessRightBO;
+use App\AUni\BO\AccessRightBO;
 
 class AccessRight {
 

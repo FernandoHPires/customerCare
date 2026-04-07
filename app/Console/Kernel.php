@@ -2,18 +2,18 @@
 
 namespace App\Console;
 
-use App\Amur\Bean\DB;
-use App\Amur\Bean\Logger;
+use App\AUni\Bean\DB;
+use App\AUni\Bean\Logger;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Amur\BO\BayviewBO;
-use App\Amur\BO\PapFileDailyReportBO;
-use App\Amur\BO\CMS\CommissionSetupBO;
-use App\Amur\BO\PapUtilBO;
-use App\Amur\BO\ReportBO;
-use App\Amur\Routine\MortgageTask;
-use App\Amur\BO\PapBO;
-use App\Amur\BO\StagePipelineBO;
+use App\AUni\BO\BayviewBO;
+use App\AUni\BO\PapFileDailyReportBO;
+use App\AUni\BO\CMS\CommissionSetupBO;
+use App\AUni\BO\PapUtilBO;
+use App\AUni\BO\ReportBO;
+use App\AUni\Routine\MortgageTask;
+use App\AUni\BO\PapBO;
+use App\AUni\BO\StagePipelineBO;
 
 class Kernel extends ConsoleKernel {
     /**

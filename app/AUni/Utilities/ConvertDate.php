@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Amur\Utilities;
+namespace App\AUni\Utilities;
 
 class ConvertDate {
 
