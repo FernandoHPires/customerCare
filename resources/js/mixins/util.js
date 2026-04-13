@@ -193,55 +193,18 @@ export const util = {
             }
         },
         formatNumber(str) {
-            if (str === undefined || str === null || str === NaN) {
-                return "";
-            } else {
-                let value = parseFloat(str.toString()).toFixed(0);
-
-                let formattedValue = ''
-                if(value == 0) {
-                    formattedValue = "0";
-                } else if (value < 0) {
-                    formattedValue = (
-                        "-" +
-                        (value * -1)
-                            .toString()
-                            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    );
-                } else {
-                    formattedValue = value
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                }
-
-                if(formattedValue === NaN || formattedValue === 'NaN') {
-                    return ''
-                }
-
-                return formattedValue
-            }
+            if (str === undefined || str === null) return "";
+            const value = parseFloat(str.toString());
+            if (isNaN(value)) return "";
+            if (value === 0) return "0";
+            return Math.round(value).toLocaleString('pt-BR');
         },
         formatDecimal(str) {
-            if (str === "" || str === undefined || str === null || isNaN(str)) {
-                return "";
-            } else {
-                let value = parseFloat(str.toString()).toFixed(2);
-
-                if (value == 0) {
-                    return "0";
-                } else if (value < 0) {
-                    value = value * -1;
-                    value = value.toFixed(2);
-                    return (
-                        "-" +
-                        value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                    );
-                } else {
-                    return value
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                }
-            }
+            if (str === "" || str === undefined || str === null) return "";
+            const value = parseFloat(str.toString());
+            if (isNaN(value)) return "";
+            if (value === 0) return "0";
+            return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
         formatDate(date) {
             if (!date) return '';

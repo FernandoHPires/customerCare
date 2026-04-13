@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PortifolioController;
 use App\Http\Controllers\EmpreendimentoController;
+use App\Http\Controllers\ViabilidadeController;
 
 
 
@@ -33,11 +34,17 @@ Route::group(['middleware' => 'webAuthentication'], function () {
 
 
   
+    Route::get('/web/dashboard', [PortifolioController::class, 'getDashboard']);
     Route::get('/web/portfolio-view', [PortifolioController::class, 'getPortfolioView']);
     Route::get('/web/portfolio', [PortifolioController::class, 'getPortfolio']);
 
     Route::delete('/web/empreendimento/{id}', [EmpreendimentoController::class, 'deleteEmpreendimento']);
     Route::post('/web/empreendimento', [EmpreendimentoController::class, 'saveEmpreendimento']);
+
+    Route::get('/web/viabilidades/{empreendimentoId}', [ViabilidadeController::class, 'getViabilidades']);
+    Route::post('/web/viabilidade', [ViabilidadeController::class, 'saveViabilidade']);
+    Route::patch('/web/viabilidade/{id}/ativar', [ViabilidadeController::class, 'ativarViabilidade']);
+    Route::delete('/web/viabilidade/{id}', [ViabilidadeController::class, 'deleteViabilidade']);
 
     
 

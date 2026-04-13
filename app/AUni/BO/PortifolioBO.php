@@ -45,6 +45,55 @@ class PortifolioBO {
         return $data;
     }
 
+    public function getDashboard() {
+
+        $this->logger->info("PortifolioBO->getDashboard");
+
+        $userId = Auth::user()->user_id;
+
+        $usersTable = UsersTable::Query()
+            ->where('user_id', $userId)
+            ->first();
+
+        if (!$usersTable) return [];
+
+        $companyId = $usersTable->default_company_id;
+        $clientes = Clientes::find($companyId);
+
+        if (!$clientes) return [];
+
+        $empreendimentos = Empreendimentos::query()
+            ->where('cliente_id', $clientes->id)
+            ->get();
+
+        $result = [];
+
+        foreach ($empreendimentos as $emp) {
+
+            $viabilidade = Viabilidades::query()
+                ->where('empreendimento_id', $emp->id)
+                ->where('status', 'A')
+                ->first();
+
+            $lancamento = $emp->previsao_lancamento
+                ? substr($emp->previsao_lancamento, 0, 4)
+                : null;
+
+            $result[] = [
+                'empreendimentoId' => $emp->id,
+                'nome'             => $emp->nome,
+                'uf'               => $emp->uf,
+                'faseAtual'        => $emp->fase_atual,
+                'totalUnidades'    => (int)($emp->total_unidades ?? 0),
+                'anoLancamento'    => $lancamento,
+                'vgv'              => $viabilidade ? (float)$viabilidade->vgv : 0,
+                'areaTotalM2'      => $viabilidade ? (float)$viabilidade->area_total_m2 : 0,
+            ];
+        }
+
+        return $result;
+    }
+
     public function getPortfolioView() {
 
         $this->logger->info("PortifolioBO->getPortfolioView");

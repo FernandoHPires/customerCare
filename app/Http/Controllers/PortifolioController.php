@@ -18,6 +18,20 @@ class PortifolioController extends Controller {
         $this->db = new DB();
     }
 
+    public function getDashboard(Request $request) {
+
+        $this->logger->info("PortifolioController->getDashboard");
+
+        $portifolioBO = new PortifolioBO($this->logger, $this->db);
+        $res = $portifolioBO->getDashboard();
+
+        $response = new Response();
+        $response->status = 'success';
+        $response->data = $res;
+
+        return response()->json($response, 200);
+    }
+
     public function getPortfolio(Request $request) {
 
 

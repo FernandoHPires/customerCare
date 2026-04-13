@@ -13,7 +13,7 @@
     </ul>
 
     <div v-if="selectedTab == 'dashboard'">
-        Dashboard
+        <Dashboard />
     </div>
 
     <div v-if="selectedTab == 'visaoGeral'">
@@ -32,10 +32,12 @@
 <script>
 import { util } from '../mixins/util'
 import VisaoGeral from '../components/VisaoGeral.vue'
+import Dashboard from './Dashboard.vue'
 
 export default {
-    components: { 
-        VisaoGeral
+    components: {
+        VisaoGeral,
+        Dashboard
     },
     mixins: [util],
     emits: ['events'],

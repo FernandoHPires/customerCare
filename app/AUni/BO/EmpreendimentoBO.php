@@ -30,7 +30,23 @@ class EmpreendimentoBO {
 
         $usersTable = UsersTable::Query()
         ->where('user_id', $userId)
-        ->first();        
+        ->first();
+
+        if ($usersTable) {
+
+            $companyId = $usersTable->default_company_id;
+  
+            $clientes = Clientes::Query()
+            ->where('id', $companyId)
+            ->first();
+
+            if (!$clientes) {
+                return false;
+            }
+
+        } else {
+            return false;
+        }
 
         $this->db->beginTransaction();
 
@@ -38,7 +54,7 @@ class EmpreendimentoBO {
 
             if ($fields->action == 'Adicionar') {
                 $empreendimento = new Empreendimentos();
-                $clienteId = $usersTable->cliente_id;
+                $clienteId = $clientes->id;
             } else {
                 $clienteId = $fields->clienteId;
                 $empreendimento = Empreendimentos::find($fields->id);
@@ -71,8 +87,8 @@ class EmpreendimentoBO {
             }
             $empreendimento->save();
 
-            $this->db->commit();       
-            return true;
+            $this->db->commit();
+            return $empreendimento->id;
 
         } catch (\Throwable $e) {
 

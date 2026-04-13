@@ -29,7 +29,7 @@ class EmpreendimentoController extends Controller {
         $response = new Response();
         if($res !== false) {
             $response->status = 'success';
-            $response->data = '';
+            $response->data = ['empreendimentoId' => $res];
         } else {
             $response->status = 'error';
         }
