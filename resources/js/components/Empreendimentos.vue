@@ -23,13 +23,6 @@
                     </ul>
                 </div>
 
-                <!-- Banner pós-criação -->
-                <div v-if="showSuccessBanner" class="alert alert-success d-flex align-items-center mx-3 mt-2 mb-0 py-2">
-                    <i class="bi-check-circle-fill me-2 fs-5"></i>
-                    <span>Empreendimento criado! Agora preencha a viabilidade abaixo.</span>
-                    <button type="button" class="btn-close ms-auto" @click="showSuccessBanner = false"></button>
-                </div>
-
                 <div class="modal-body">
 
                     <!-- ===== Tab: Empreendimento ===== -->
@@ -198,41 +191,38 @@
                             </div>
 
                             <div class="row mb-2">
-                                <div class="form-group col-4">
+                                <div class="form-group col-3">
                                     <label class="table-header">Unidades Venda</label>
                                     <input type="number" class="form-control" v-model="vForm.unidadesVenda" />
                                 </div>
-                                <div class="form-group col-4">
+                                <div class="form-group col-3">
                                     <label class="table-header">Área Total m²</label>
                                     <CurrencyInput v-model="vForm.areaTotalM2" />
                                 </div>
-                                <div class="form-group col-4">
+                                <div class="form-group col-3">
                                     <label class="table-header">Valor Previsto m²</label>
                                     <CurrencyInput v-model="vForm.valorPrevisto" />
                                 </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
+                                <div class="form-group col-3">
                                     <label class="table-header">Aquisição Terreno R$</label>
                                     <CurrencyInput v-model="vForm.valorAquisicaoTerreno" />
                                 </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Aquisição Terreno %</label>
-                                    <CurrencyInput v-model="vForm.percentualAquisicaoTerreno" />
-                                </div>
                             </div>
 
                             <div class="row mb-2">
-                                <div class="form-group col-4">
+                                <div class="form-group col-3">
+                                    <label class="table-header">Aquisição Terreno %</label>
+                                    <CurrencyInput v-model="vForm.percentualAquisicaoTerreno" />
+                                </div>
+                                <div class="form-group col-3">
                                     <label class="table-header">% Permuta Física/Financ.</label>
                                     <CurrencyInput v-model="vForm.percentualPermutaFisica" />
                                 </div>
-                                <div class="form-group col-4">
+                                <div class="form-group col-3">
                                     <label class="table-header">VGV Estimado</label>
                                     <CurrencyInput v-model="vForm.vgv" />
                                 </div>
-                                <div class="form-group col-4">
+                                <div class="form-group col-3">
                                     <label class="table-header">Exposição Caixa VP</label>
                                     <CurrencyInput v-model="vForm.exposicaoCaixa" />
                                 </div>
@@ -399,7 +389,6 @@ export default {
             this.activeTab = 'empreendimento';
             this.localAction = this.action;
             this.localEmpreendimentoId = null;
-            this.showSuccessBanner = false;
             if (this.action === 'Editar') {
                 this.loadData();
                 this.loadViabilidades();
@@ -412,7 +401,6 @@ export default {
             activeTab: 'empreendimento',
             localAction: 'Adicionar',
             localEmpreendimentoId: null,
-            showSuccessBanner: false,
 
             produtos: [
                 { value: 'Comercial', text: 'Comercial' },
@@ -477,7 +465,7 @@ export default {
             viabilidadeAction: 'Adicionar',
             vForm: {
                 id: 0,
-                status: 'I',
+                status: 'A',
                 unidadesVenda: 0,
                 valorAquisicaoTerreno: 0,
                 percentualAquisicaoTerreno: 0,
@@ -518,7 +506,7 @@ export default {
         emptyVForm() {
             return {
                 id: 0,
-                status: 'I',
+                status: 'A',
                 unidadesVenda: 0,
                 valorAquisicaoTerreno: 0,
                 percentualAquisicaoTerreno: 0,
@@ -731,8 +719,9 @@ export default {
                         // Guardar o ID gerado e mudar para modo Editar + aba Viabilidades
                         this.localEmpreendimentoId = response.data.data.empreendimentoId;
                         this.localAction = 'Editar';
-                        this.showSuccessBanner = true;
                         this.activeTab = 'viabilidades';
+                        this.alertMessage = "Empreendimento criado! Agora preencha a viabilidade.";
+                        this.showAlert('success');
                         this.novaViabilidade();
                     } else {
                         this.alertMessage = "Empreendimento salvo com sucesso!";
@@ -780,7 +769,6 @@ export default {
             this.vForm = this.emptyVForm();
             this.localAction = this.action;
             this.localEmpreendimentoId = null;
-            this.showSuccessBanner = false;
         },
 
         loadData() {

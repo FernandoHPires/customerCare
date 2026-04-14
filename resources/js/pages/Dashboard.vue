@@ -9,7 +9,12 @@
             </div>
 
             <div class="filter-section">
-                <p class="filter-label">UF</p>
+                <div class="filter-label-row">
+                    <p class="filter-label mb-0">UF</p>
+                    <button class="btn-toggle-all" @click="toggleAll('uf')">
+                        {{ selectedUFs.length === ufOptions.length ? 'Desmarcar' : 'Marcar' }}
+                    </button>
+                </div>
                 <div v-for="uf in ufOptions" :key="uf" class="filter-item">
                     <label class="filter-check">
                         <input type="checkbox" :value="uf" v-model="selectedUFs" />
@@ -19,7 +24,12 @@
             </div>
 
             <div class="filter-section mt-3">
-                <p class="filter-label">Fase Atual</p>
+                <div class="filter-label-row">
+                    <p class="filter-label mb-0">Fase Atual</p>
+                    <button class="btn-toggle-all" @click="toggleAll('fase')">
+                        {{ selectedFases.length === faseOptions.length ? 'Desmarcar' : 'Marcar' }}
+                    </button>
+                </div>
                 <div v-for="fase in faseOptions" :key="fase" class="filter-item">
                     <label class="filter-check">
                         <input type="checkbox" :value="fase" v-model="selectedFases" />
@@ -87,6 +97,7 @@ const baseChartOptions = {
     chart: {
         backgroundColor: 'transparent',
         style: { fontFamily: 'Arial, sans-serif' },
+        height: 290,
     },
     credits: { enabled: false },
     colors: CHART_COLORS,
@@ -130,8 +141,8 @@ export default {
         },
         filteredData() {
             return this.projects.filter(p => {
-                const ufOk = this.selectedUFs.length === 0 || this.selectedUFs.includes(p.uf)
-                const faseOk = this.selectedFases.length === 0 || this.selectedFases.includes(p.faseAtual)
+                const ufOk = this.selectedUFs.includes(p.uf)
+                const faseOk = this.selectedFases.includes(p.faseAtual)
                 return ufOk && faseOk
             })
         },
@@ -323,12 +334,25 @@ export default {
         this.loadData()
     },
     methods: {
+        toggleAll(type) {
+            if (type === 'uf') {
+                this.selectedUFs = this.selectedUFs.length === this.ufOptions.length
+                    ? []
+                    : [...this.ufOptions]
+            } else {
+                this.selectedFases = this.selectedFases.length === this.faseOptions.length
+                    ? []
+                    : [...this.faseOptions]
+            }
+        },
         loadData() {
             this.showPreLoader()
             this.axios({ method: 'get', url: '/web/dashboard' })
                 .then(response => {
                     if (this.checkApiResponse(response)) {
                         this.projects = response.data.data
+                        this.selectedUFs = [...new Set(this.projects.map(p => p.uf).filter(Boolean))]
+                        this.selectedFases = [...new Set(this.projects.map(p => p.faseAtual).filter(Boolean))]
                     }
                 })
                 .catch(() => {})
@@ -355,7 +379,8 @@ export default {
 <style scoped>
 .dashboard {
     display: flex;
-    min-height: calc(100vh - 56px);
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
     background: #124C60;
     color: #ffffff;
     font-family: Arial, sans-serif;
@@ -363,93 +388,113 @@ export default {
 
 /* ---- Sidebar ---- */
 .sidebar {
-    width: 190px;
-    min-width: 190px;
+    width: 170px;
+    min-width: 170px;
     background: #20556E;
-    padding: 20px 16px;
+    padding: 16px 12px;
     display: flex;
     flex-direction: column;
 }
 
 .sidebar-logo {
     text-align: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
     border-bottom: 1px solid #3A7A95;
 }
 .logo-img {
-    max-width: 100px;
-    margin-bottom: 6px;
+    max-width: 80px;
+    margin-bottom: 4px;
 }
 .logo-text {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: bold;
     color: #F0F9F8;
     line-height: 1.2;
 }
 .logo-text small {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: normal;
     color: #CCECF5;
 }
 
-.filter-section { margin-bottom: 8px; }
+.filter-section { margin-bottom: 6px; }
+.filter-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+.btn-toggle-all {
+    background: transparent;
+    border: 1px solid #4AACC5;
+    color: #4AACC5;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1.4;
+}
+.btn-toggle-all:hover {
+    background: #4AACC5;
+    color: #fff;
+}
 .filter-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: bold;
     text-transform: uppercase;
     color: #CCECF5;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
-.filter-item { margin-bottom: 5px; }
+.filter-item { margin-bottom: 3px; }
 .filter-check {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
     color: #F0F9F8;
 }
 .filter-check input[type="checkbox"] {
     accent-color: #4AACC5;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     cursor: pointer;
 }
 
 /* ---- Main ---- */
 .main-content {
     flex: 1;
-    padding: 16px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    overflow: auto;
+    gap: 10px;
+    min-width: 0;
 }
 
 /* ---- KPI Cards ---- */
 .kpi-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
+    gap: 10px;
 }
 .kpi-card {
     background: #20556E;
-    border-radius: 10px;
-    padding: 14px 20px;
+    border-radius: 8px;
+    padding: 12px 16px;
     text-align: center;
 }
 .kpi-label {
-    font-size: 13px;
+    font-size: 11px;
     color: #CCECF5;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
 .kpi-value {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: bold;
     color: #F0F9F8;
     line-height: 1.1;
@@ -459,15 +504,12 @@ export default {
 .charts-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    flex: 1;
-    min-height: 280px;
+    gap: 10px;
 }
 .chart-card {
     background: #20556E;
-    border-radius: 10px;
-    padding: 10px;
-    min-height: 280px;
+    border-radius: 8px;
+    padding: 8px;
 }
 .chart-card :deep(.highcharts-container) {
     width: 100% !important;

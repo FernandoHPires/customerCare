@@ -26,6 +26,55 @@ class UserController extends Controller {
         return response()->json($response, 200);
     }
 
+    public function getUsers(Request $request) {
+
+        $userBO = new UserBO($this->logger);
+        $users = $userBO->getUsers();
+
+        $response = new Response();
+        $response->status = 'success';
+        $response->data = $users;
+
+        return response()->json($response, 200);
+    }
+
+    public function saveUser(Request $request) {
+
+        $this->logger->info('UserController->saveUser', [$request->all()]);
+
+        $fields = (object) $request->all();
+        $userBO = new UserBO($this->logger);
+        $res = $userBO->saveUser($fields);
+
+        $response = new Response();
+        if ($res !== false) {
+            $response->status = 'success';
+            $response->data = ['userId' => $res];
+        } else {
+            $response->status = 'error';
+        }
+
+        return response()->json($response, 200);
+    }
+
+    public function deleteUser(Request $request, $id) {
+
+        $this->logger->info('UserController->deleteUser', ['id' => $id]);
+
+        $userBO = new UserBO($this->logger);
+        $res = $userBO->deleteUser($id);
+
+        $response = new Response();
+        if ($res !== false) {
+            $response->status = 'success';
+            $response->data = '';
+        } else {
+            $response->status = 'error';
+        }
+
+        return response()->json($response, 200);
+    }
+
     public function store(Request $request) {
 
         $request->validate([
@@ -186,24 +235,6 @@ class UserController extends Controller {
             $response->status = 'error';
             $response->message = 'No accounting Users found';
             $response->data = []; // Return empty array if no brokers
-        }
-    
-        return response()->json($response, 200);
-    }
-
-    public function getFundingUsers() {
-        $userBO = new UserBO($this->logger);
-        $fundingUsers = $userBO->getFundingUsers(); // Call a method to retrieve funding users
-    
-        $response = new Response();
-        if (!empty($fundingUsers)) {
-            $response->status = 'success';
-            $response->message = 'Funding Users retrieved successfully';
-            $response->data = $fundingUsers; // Ensure funding users are under 'data'
-        } else {
-            $response->status = 'error';
-            $response->message = 'No funding users found';
-            $response->data = []; // Return empty array if no users
         }
     
         return response()->json($response, 200);

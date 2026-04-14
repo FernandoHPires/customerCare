@@ -7,6 +7,8 @@ import Login from '../views/Login.vue';
 
 //UNI
 import PortfolioView from '../pages/PortfolioView.vue';
+import Clientes from '../pages/Clientes.vue';
+import Usuarios from '../pages/Usuarios.vue';
 
 //catch-all
 import NotFound from '../pages/NotFound.vue';
@@ -29,6 +31,16 @@ const routes = [
         path: "/portfolio-view",
         name: "PortfolioView",
         component: PortfolioView,
+    },
+    {
+        path: "/clientes",
+        name: "Clientes",
+        component: Clientes,
+    },
+    {
+        path: "/usuarios",
+        name: "Usuarios",
+        component: Usuarios,
     },
     {
         path: "/:catchAll(.*)",

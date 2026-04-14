@@ -5,9 +5,12 @@ namespace App\AUni\BO;
 use App\AUni\Bean\ILogger;
 use App\Models\GroupMembersTable;
 use App\Models\UsersTable;
+use App\Models\Clientes;
 use App\Models\GroupScreen;
 use App\Models\Menu;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserBO {
 
@@ -22,9 +25,8 @@ class UserBO {
     public function index() {
 
         $usersObj = UsersTable::query()
-            ->where('inuse', 'yes')
-            ->orderBy('user_fname')
-            ->get();
+        ->orderBy('user_fname')
+        ->get();
 
         $users = array();
         if ($usersObj) {
@@ -37,7 +39,6 @@ class UserBO {
                     'lastName' => $value->user_lname,
                     'email' => $value->user_email,
                     'userDepartment' => $value->user_dept,
-                    'trackerView' => $value->doctracker_view,
                     'isAdmin' => $value->admin,
                     'companyId' => $value->default_company_id
                 ];
@@ -59,9 +60,9 @@ class UserBO {
             $user = [
                 'id' => $userObj->user_id,
                 'username' => $userObj->user_name,
-                'fullName' => $userObj->user_full_name,
-                'firstName' => $userObj->user_full_name,
-                'lastName' => $userObj->user_full_name,
+                'fullName' => $userObj->user_fname . ' ' . $userObj->user_lname,
+                'firstName' => $userObj->user_fname,
+                'lastName' => $userObj->user_lname,
                 'email' => $userObj->user_email,
                 'trackerManager' => '',
                 'trackerView' => '',
@@ -71,56 +72,6 @@ class UserBO {
         }
 
         return $user;
-    }
-
-    public function getBdmData() {
-        $usersObj = UsersTable::query()
-            ->where('inuse', 'yes')
-            ->where('is_bdm', 'yes')
-            ->orderBy('user_name')
-            ->get();
-
-        $users = array(
-            [
-                "id" => "",
-                "name" => ""
-            ],
-            [
-                "id" => 4912,
-                "name" => "CollinJ"
-            ]
-        );
-        if ($usersObj) {
-            foreach ($usersObj as $key => $value) {
-                $users[] = [
-                    'id' => $value->user_id,
-                    'name' => $value->user_name,
-                ];
-            }
-        }
-
-        return $users;
-    }
-
-    public function getAgentsData() {
-
-        $usersObj = UsersTable::query()
-            ->where('inuse', 'yes')
-            ->where('agent', 'yes')
-            ->orderBy('user_fname')
-            ->get();
-
-        if ($usersObj) {
-            foreach ($usersObj as $key => $value) {
-                $users[] = [
-                    'id' => $value->user_id,
-                    'name' => $value->user_name,
-                    'fullName' => $value->user_fname . ' ' . $value->user_lname,
-                ];
-            }
-        }
-
-        return $users;
     }
 
     public function store($id, $username, $firstName, $lastName, $email) {
@@ -134,7 +85,6 @@ class UserBO {
             $user->save();
         } else {
             $user = new UsersTable();
-            $user->crm_user_id = ' ';
             $user->user_password = ' ';
             $user->user_phone = ' ';
             $user->user_name = $username;
@@ -151,7 +101,6 @@ class UserBO {
         $user = UsersTable::find($id);
 
         if ($user) {
-            $user->inuse = 'no';
             $user->save();
             return true;
         } else {
@@ -431,33 +380,106 @@ class UserBO {
             ->toArray();
     }  
 
-    public function getFundingUsers() {
+    public function getUsers() {
 
         $usersObj = UsersTable::query()
-            ->where('inuse', 'yes')
-            ->where('funding', 'yes')
-            ->orderBy('user_fname')
+            ->leftJoin('clientes', 'clientes.id', '=', 'users_table.default_company_id')
+            ->select('users_table.*', 'clientes.nome as company_name')
+            ->orderBy('users_table.user_fname')
             ->get();
 
-        $users = array();
-        if ($usersObj) {
-            foreach ($usersObj as $key => $value) {
-                $users[] = [
-                    'id' => $value->user_id,
-                    'username' => $value->user_name,
-                    'fullName' => $value->user_fname . ' ' . $value->user_lname,
-                    'firstName' => $value->user_fname,
-                    'lastName' => $value->user_lname,
-                    'email' => $value->user_email,
-                    'userDepartment' => $value->user_dept,
-                    'trackerView' => $value->doctracker_view,
-                    'isAdmin' => $value->admin,
-                    'companyId' => $value->default_company_id
-                ];
-            }
+        $users = [];
+        foreach ($usersObj as $value) {
+            $users[] = [
+                'id'          => $value->user_id,
+                'username'    => $value->user_name,
+                'firstName'   => $value->user_fname,
+                'lastName'    => $value->user_lname,
+                'fullName'    => $value->user_fname . ' ' . $value->user_lname,
+                'email'       => $value->user_email,
+                'phone'       => $value->user_phone,
+                'dept'        => $value->user_dept,
+                'companyId'   => $value->default_company_id,
+                'companyName' => $value->company_name,
+                'isAdmin'     => $value->admin,
+            ];
         }
 
         return $users;
+    }
+
+    public function saveUser($fields) {
+
+        $this->logger->info('UserBO->saveUser', [$fields]);
+
+        $loggedUserId = Auth::user()->user_id;
+
+        DB::beginTransaction();
+
+        try {
+
+            if ($fields->action == 'Adicionar') {
+                $user = new UsersTable();
+                $user->created_by    = $loggedUserId;
+                $user->user_password = Hash::make($fields->password);
+            } else {
+                $user = UsersTable::find($fields->id);
+                if (!$user) {
+                    return false;
+                }
+                $user->updated_by = $loggedUserId;
+                if (!empty($fields->password)) {
+                    $user->user_password = Hash::make($fields->password);
+                }
+            }
+
+            $user->user_name           = $fields->username;
+            $user->user_fname          = $fields->firstName;
+            $user->user_lname          = $fields->lastName;
+            $user->user_email          = $fields->email;
+            $user->user_phone          = $fields->phone ?? '';
+            $user->user_dept           = $fields->dept ?? '';
+            $user->default_company_id  = $fields->companyId;
+            $user->admin               = $fields->isAdmin ? 1 : 0;
+            $user->save();
+
+            DB::commit();
+            return $user->user_id;
+
+        } catch (\Throwable $e) {
+
+            $this->logger->info('UserBO->saveUser', [$e->getMessage(), $e->getTraceAsString()]);
+            DB::rollback();
+            return false;
+        }
+    }
+
+    public function deleteUser($id) {
+
+        $this->logger->info('UserBO->deleteUser', ['id' => $id]);
+
+        $loggedUserId = Auth::user()->user_id;
+
+        DB::beginTransaction();
+
+        try {
+            $user = UsersTable::find($id);
+            if (!$user) {
+                return false;
+            }
+            $user->deleted_by = $loggedUserId;
+            $user->save();
+            $user->delete();
+
+            DB::commit();
+            return true;
+
+        } catch (\Throwable $e) {
+
+            $this->logger->info('UserBO->deleteUser', [$e->getMessage(), $e->getTraceAsString()]);
+            DB::rollback();
+            return false;
+        }
     }
 
     public function getSupportUsers() {
@@ -476,174 +498,4 @@ class UserBO {
             ->toArray();
     }
 
-    public function getSequenceAgents() {
-
-        $usersTable = UsersTable::query()
-        ->where('inuse', 'yes')
-        ->where(function ($query) {
-            $query->where('is_bdm', 'yes')
-                ->orWhere('is_underwriting_assistant', 'yes');
-        })
-        ->orderBy('user_fname')
-        ->get();
-
-        $agentOptions = array();
-        foreach ($usersTable as $key => $value) {
-            if(!empty($value->user_name)) {    
-                $agentOptions[] = [
-                    'id' => $value->user_id,
-                    'username' => $value->user_name,
-                    'fullName' => $value->user_fname . ' ' . $value->user_lname,
-                    'isBdm' => $value->is_bdm,
-                    'isUnderwritingAssistant' => $value->is_underwriting_assistant
-                ];
-            }
-        }
-
-        return $agentOptions;
-    }
-
-    public function getSequenceAgentList() {
-
-        $userId = Auth::user()->user_id ?? 99;
-
-        $user = UsersTable::query()
-        ->where('user_id', $userId)
-        ->first();
-
-        $defaultCompanyId = 99;
-        $admin = 'No';
-        $agentId = 99;
-
-        if ($user) {
-            $defaultCompanyId = $user->default_company_id;
-            $admin = $user->admin;
-        }
-
-        $query = UsersTable::query();
-
-        if ($defaultCompanyId == 301 && $admin == "no") {
-
-            $query->where('default_company_id', 301)
-                ->where(function ($q) use ($agentId) {
-                    $q->where('inuse', 'yes')
-                        ->orWhere(function ($q2) use ($agentId) {
-                            $q2->where('inuse', 'no')->where('user_id', $agentId);
-                        });
-                });
-
-        } elseif ($defaultCompanyId == 601 && $admin == "no") {
-
-            $query->where('default_company_id', 601)
-                ->where(function ($q) use ($agentId) {
-                    $q->where('inuse', 'yes')
-                        ->orWhere(function ($q2) use ($agentId) {
-                            $q2->where('inuse', 'no')->where('user_id', $agentId);
-                        });
-                });
-
-        } elseif ($defaultCompanyId == 701 && $admin == "no") {
-
-            $query->where('default_company_id', 701)
-                ->where(function ($q) use ($agentId) {
-                    $q->where('inuse', 'yes')
-                        ->orWhere(function ($q2) use ($agentId) {
-                            $q2->where('inuse', 'no')->where('user_id', $agentId);
-                        });
-                });
-
-        } elseif ($defaultCompanyId == 401 && $admin == "no") {
-
-            $query->where('default_company_id', 401)
-                ->where(function ($q) use ($agentId) {
-                    $q->where('inuse', 'yes')
-                        ->orWhere(function ($q2) use ($agentId) {
-                            $q2->where('inuse', 'no')->where('user_id', $agentId);
-                        });
-                });
-
-        } elseif ($admin == "no") {
-
-            $query->whereNotIn('default_company_id', [301, 601, 401])
-                ->where('inuse', 'yes');
-
-        } else {
-
-            $query->where(function ($q) use ($agentId) {
-                $q->where('inuse', 'yes')
-                ->orWhere(function ($q2) use ($agentId) {
-                    $q2->where('inuse', 'no')->where('user_id', $agentId);
-                });
-            });
-        }
-
-        $queryAgents = $query->orderBy('user_name')->get();        
-        
-
-        $sequenceAgentList = array();
-
-        foreach ($queryAgents as $key => $value) {
-            if (!empty($value->user_fname)) {
-                $sequenceAgentList[] = [
-                    'id' => $value->user_id,
-                    'name' => $value->user_fname . ' ' . $value->user_lname,
-                ];
-            }
-        }
-
-        return $sequenceAgentList;
-    }
-
-
-    public function getSigningAgents() {
-
-        $usersTable = UsersTable::query()
-        ->where('inuse', 'yes')
-        ->orderBy('user_fname')
-        ->get();
-
-        $signingAgentOptions = array();
-        $signingAgentOptions[] = [
-            'id' => 0,
-            'name' => '',
-        ];
-
-        foreach ($usersTable as $key => $value) {
-            if (!empty($value->user_fname)) {
-                $signingAgentOptions[] = [
-                    'id' => $value->user_id,
-                    'name' => $value->user_fname . ' ' . $value->user_lname,
-                ];
-            }
-        }
-
-        return $signingAgentOptions;
-    }
-
-    public function getAllAgents() {
-
-        $usersTable = UsersTable::query()
-        ->where('inuse', 'yes')
-        ->where('doctracker_view','Broker')
-        ->where('default_company_id',1)
-        ->orderBy('user_fname')
-        ->get();
-
-        $agentOptions = array();
-        $agentOptions[] = [
-            'id' => 0,
-            'name' => '',
-        ];
-
-        foreach ($usersTable as $key => $value) {
-            if (!empty($value->user_fname)) {
-                $agentOptions[] = [
-                    'id' => $value->user_id,
-                    'name' => $value->user_fname . ' ' . $value->user_lname,
-                ];
-            }
-        }
-
-        return $agentOptions;
-    }
 }

@@ -1,5 +1,5 @@
 <template>
-    <ul class="nav nav-tabs d-flex align-items-center w-100 mb-2 sticky-top bg-light-ultra">
+    <ul class="nav nav-tabs d-flex align-items-center w-100 mb-2 sticky-top bg-light-ultra" style="top: 57px; z-index: 100;">
         <li class="nav-item" v-for="tab in tabs" :key="tab.name">
             <a
                 class="nav-link text-dark"
@@ -21,23 +21,22 @@
     </div>
 
     <div v-if="selectedTab == 'simulacaoViabilidade'">
-        Simulação de Viabilidade
+        <SimulacaoViabilidade />
     </div>
     
-    <div v-if="selectedTab == 'viabilidades'">
-        Viabilidades
-    </div>
 </template>
 
 <script>
 import { util } from '../mixins/util'
 import VisaoGeral from '../components/VisaoGeral.vue'
 import Dashboard from './Dashboard.vue'
+import SimulacaoViabilidade from './SimulacaoViabilidade.vue'
 
 export default {
     components: {
         VisaoGeral,
-        Dashboard
+        Dashboard,
+        SimulacaoViabilidade
     },
     mixins: [util],
     emits: ['events'],
@@ -47,12 +46,14 @@ export default {
                 { name: 'dashboard', label: 'Dashboard' },
                 { name: 'visaoGeral', label: 'Visão Geral do Portfólio' },
                 { name: 'simulacaoViabilidade', label: 'Simulação de Viabilidade' },
-                { name: 'viabilidades', label: 'Viabilidades' },
             ],
             selectedTab: 'dashboard'
         }
     },  
     mounted() {
+        if (this.$route.query.tab) {
+            this.selectedTab = this.$route.query.tab;
+        }
         this.getData()
     },
     methods: {
