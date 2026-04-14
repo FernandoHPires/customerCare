@@ -151,7 +151,7 @@
                                 {{ modalAction === 'Adicionar' ? 'Defina o usuário e a senha de acesso.' : 'Deixe a senha em branco para manter a senha atual.' }}
                             </small>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Usuário <span class="text-danger">*</span></label>
                             <input
                                 type="text"
@@ -161,8 +161,15 @@
                                 autocomplete="off"
                             />
                         </div>
-                        <div class="col-md-8"></div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Perfil <span class="text-danger">*</span></label>
+                            <SearchableSelect
+                                v-model="form.perfilId"
+                                :options="perfilOptions"
+                                placeholder="Pesquisar perfil..."
+                            />
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">
                                 Senha <span class="text-danger">*</span>
                             </label>
@@ -183,7 +190,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">
                                 Confirmar Senha <span class="text-danger">*</span>
                             </label>
@@ -236,6 +243,7 @@ export default {
         return {
             usuarios: [],
             clientes: [],
+            perfis: [],
             search: '',
             modalAction: 'Adicionar',
             form: this.emptyForm(),
@@ -259,10 +267,14 @@ export default {
         clienteOptions() {
             return this.clientes.map((c) => ({ id: c.id, label: c.nome }));
         },
+        perfilOptions() {
+            return this.perfis.map((p) => ({ id: p.id, label: p.nome }));
+        },
     },
     mounted() {
         this.getUsuarios();
         this.getClientes();
+        this.getPerfis();
     },
     methods: {
         emptyForm() {
@@ -275,6 +287,7 @@ export default {
                 phone: '',
                 dept: '',
                 companyId: null,
+                perfilId: null,
                 isAdmin: false,
                 password: '',
                 passwordConfirm: '',
@@ -306,6 +319,16 @@ export default {
                 .catch((error) => console.error(error));
         },
 
+        getPerfis() {
+            this.axios({ method: 'get', url: '/web/perfis' })
+                .then((response) => {
+                    if (this.checkApiResponse(response)) {
+                        this.perfis = response.data.data;
+                    }
+                })
+                .catch((error) => console.error(error));
+        },
+
         openModal(action, row) {
             this.modalAction = action;
             this.showPassword = false;
@@ -319,6 +342,7 @@ export default {
                     phone:           row.phone,
                     dept:            row.dept,
                     companyId:       row.companyId,
+                    perfilId:        row.perfilId,
                     isAdmin:         !!row.isAdmin,
                     password:        '',
                     passwordConfirm: '',
@@ -353,6 +377,11 @@ export default {
             }
             if (!this.form.companyId) {
                 this.alertMessage = 'Selecione um cliente.';
+                this.showAlert('error');
+                return;
+            }
+            if (!this.form.perfilId) {
+                this.alertMessage = 'Selecione um perfil de acesso.';
                 this.showAlert('error');
                 return;
             }

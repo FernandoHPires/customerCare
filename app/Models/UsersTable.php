@@ -23,6 +23,7 @@ class UsersTable extends Model {
         'user_phone',
         'user_dept',
         'default_company_id',
+        'perfil_id',
         'admin',
         'created_by',
         'updated_by',

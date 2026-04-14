@@ -8,6 +8,8 @@ use App\Http\Controllers\EmpreendimentoController;
 use App\Http\Controllers\ViabilidadeController;
 use App\Http\Controllers\SimulacaoController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\PermissaoController;
 
 
 
@@ -34,6 +36,13 @@ Route::group(['middleware' => 'webAuthentication'], function () {
     Route::get('web/current-user', [UserController::class, 'current']);
     Route::get('web/menus', [UserController::class, 'getMenus']);
 
+    Route::get('/web/perfis', [PerfilController::class, 'getPerfis']);
+    Route::post('/web/perfil', [PerfilController::class, 'savePerfil']);
+    Route::delete('/web/perfil/{id}', [PerfilController::class, 'deletePerfil']);
+
+    Route::get('/web/permissoes', [PermissaoController::class, 'getPermissoes']);
+    Route::get('/web/permissao/{perfilId}', [PermissaoController::class, 'getMenusPerfil']);
+    Route::post('/web/permissao/{perfilId}', [PermissaoController::class, 'savePermissao']);
     Route::get('/web/usuarios', [UserController::class, 'getUsers']);
     Route::post('/web/usuario', [UserController::class, 'saveUser']);
     Route::delete('/web/usuario/{id}', [UserController::class, 'deleteUser']);

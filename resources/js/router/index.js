@@ -9,6 +9,8 @@ import Login from '../views/Login.vue';
 import PortfolioView from '../pages/PortfolioView.vue';
 import Clientes from '../pages/Clientes.vue';
 import Usuarios from '../pages/Usuarios.vue';
+import Perfis from '../pages/Perfis.vue';
+import Permissoes from '../pages/Permissoes.vue';
 
 //catch-all
 import NotFound from '../pages/NotFound.vue';
@@ -41,6 +43,16 @@ const routes = [
         path: "/usuarios",
         name: "Usuarios",
         component: Usuarios,
+    },
+    {
+        path: "/perfis",
+        name: "Perfis",
+        component: Perfis,
+    },
+    {
+        path: "/permissoes",
+        name: "Permissoes",
+        component: Permissoes,
     },
     {
         path: "/:catchAll(.*)",

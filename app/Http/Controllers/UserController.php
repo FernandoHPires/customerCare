@@ -7,7 +7,6 @@ use App\AUni\Bean\Response;
 use App\AUni\BO\UserBO;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\AUni\BO\BrokerBO;
 
 class UserController extends Controller {
 
@@ -199,24 +198,6 @@ class UserController extends Controller {
             $response->status = 'error';
             $response->message = 'No agents found';
             $response->data = [];
-        }
-    
-        return response()->json($response, 200);
-    }
-
-    public function getExternalBrokers() {
-        $brokerBO = new BrokerBO($this->logger);
-        $brokers = $brokerBO->getAllData();
-
-        $response = new Response();
-        if (!empty($brokers)) {
-            $response->status = 'success';
-            $response->message = 'External Brokers retrieved successfully';
-            $response->data = $brokers; 
-        } else {
-            $response->status = 'error';
-            $response->message = 'No external brokers found';
-            $response->data = []; 
         }
     
         return response()->json($response, 200);
