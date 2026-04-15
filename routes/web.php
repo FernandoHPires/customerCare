@@ -9,6 +9,7 @@ use App\Http\Controllers\ViabilidadeController;
 use App\Http\Controllers\SimulacaoController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\AlterarSenhaController;
 use App\Http\Controllers\PermissaoController;
 
 
@@ -35,6 +36,8 @@ Route::group(['middleware' => 'webAuthentication'], function () {
     
     Route::get('web/current-user', [UserController::class, 'current']);
     Route::get('web/menus', [UserController::class, 'getMenus']);
+
+    Route::post('/web/alterar-senha', [AlterarSenhaController::class, 'alterarSenha']);
 
     Route::get('/web/perfis', [PerfilController::class, 'getPerfis']);
     Route::post('/web/perfil', [PerfilController::class, 'savePerfil']);

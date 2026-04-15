@@ -78,8 +78,8 @@
                             <div class="dropdown-menu dropdown-menu-end pt-0">
                                 <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">Configurações</div>
 
-                                <a class="dropdown-item" href="#" @click="toPage('/accounts')">
-                                    <i class="bi bi-bag me-2"></i>Alterar minha senha
+                                <a class="dropdown-item" href="#" @click="toPage({ path: '/alterar-senha' })">
+                                    <i class="bi bi-lock me-2"></i>Alterar minha senha
                                 </a>
 
                                 <hr class="dropdown-divider">

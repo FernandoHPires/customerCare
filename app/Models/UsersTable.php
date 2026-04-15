@@ -25,6 +25,9 @@ class UsersTable extends Model {
         'default_company_id',
         'perfil_id',
         'admin',
+        'login_attempts',
+        'locked_until',
+        'last_login_attempt',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -32,5 +35,10 @@ class UsersTable extends Model {
 
     protected $hidden = [
         'user_password',
+    ];
+
+    protected $casts = [
+        'locked_until'        => 'datetime',
+        'last_login_attempt'  => 'datetime',
     ];
 }

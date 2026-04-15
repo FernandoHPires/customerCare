@@ -11,6 +11,7 @@ import Clientes from '../pages/Clientes.vue';
 import Usuarios from '../pages/Usuarios.vue';
 import Perfis from '../pages/Perfis.vue';
 import Permissoes from '../pages/Permissoes.vue';
+import AlterarSenha from '../pages/AlterarSenha.vue';
 
 //catch-all
 import NotFound from '../pages/NotFound.vue';
@@ -53,6 +54,11 @@ const routes = [
         path: "/permissoes",
         name: "Permissoes",
         component: Permissoes,
+    },
+    {
+        path: "/alterar-senha",
+        name: "AlterarSenha",
+        component: AlterarSenha,
     },
     {
         path: "/:catchAll(.*)",
