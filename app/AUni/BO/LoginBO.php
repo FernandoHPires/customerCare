@@ -104,9 +104,12 @@ class LoginBO {
     }
 
     /**
-     * Verifica se a sessão ainda está ativa no servidor (driver: file).
-     * O Laravel não apaga arquivos de sessão imediatamente — verifica
-     * se o arquivo foi modificado dentro do SESSION_LIFETIME.
+     * Verifica se a sessão está REALMENTE ativa (driver: file).
+     *
+     * Usa uma janela curta de 15 minutos para detectar atividade real,
+     * evitando falsos positivos quando o usuário fechou o browser sem fazer logout.
+     * O check-session do frontend atualiza o arquivo a cada 10 minutos,
+     * então qualquer sessão genuinamente ativa estará dentro dessa janela.
      */
     private function isSessaoAtiva($sessionToken) {
         if (empty($sessionToken)) return false;
@@ -115,18 +118,24 @@ class LoginBO {
 
         if (!file_exists($arquivo)) return false;
 
-        $lifetime     = config('session.lifetime') * 60; // minutos → segundos
+        $janelaAtiva     = 15 * 60; // 15 minutos em segundos
         $ultimaAtividade = filemtime($arquivo);
 
-        return (time() - $ultimaAtividade) < $lifetime;
+        return (time() - $ultimaAtividade) < $janelaAtiva;
     }
 
     public function logout($request) {
 
         // Invalida o token — usa UUID aleatório para derrubar qualquer sessão ainda aberta
+        // Busca o usuário pelo session_token caso Auth::user() esteja indisponível
         $user = Auth::user();
         if ($user) {
             UsersTable::where('user_id', $user->user_id)->update(['session_token' => Str::uuid()]);
+        } else {
+            $sessionToken = $request->session()->getId();
+            if ($sessionToken) {
+                UsersTable::where('session_token', $sessionToken)->update(['session_token' => Str::uuid()]);
+            }
         }
 
         Auth::logout();
