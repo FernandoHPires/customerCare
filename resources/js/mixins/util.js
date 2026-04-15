@@ -206,6 +206,23 @@ export const util = {
             if (value === 0) return "0";
             return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
+        formatPhone(value) {
+            if (!value) return '';
+            const d = String(value).replace(/\D/g, '');
+            if (d.length <= 2)  return '(' + d;
+            if (d.length <= 6)  return '(' + d.slice(0,2) + ') ' + d.slice(2);
+            if (d.length <= 10) return '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6);
+            return '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7,11);
+        },
+        formatCnpj(value) {
+            if (!value) return '';
+            const d = String(value).replace(/\D/g, '');
+            if (d.length <= 2)  return d;
+            if (d.length <= 5)  return d.slice(0,2) + '.' + d.slice(2);
+            if (d.length <= 8)  return d.slice(0,2) + '.' + d.slice(2,5) + '.' + d.slice(5);
+            if (d.length <= 12) return d.slice(0,2) + '.' + d.slice(2,5) + '.' + d.slice(5,8) + '/' + d.slice(8);
+            return d.slice(0,2) + '.' + d.slice(2,5) + '.' + d.slice(5,8) + '/' + d.slice(8,12) + '-' + d.slice(12,14);
+        },
         formatDate(date) {
             if (!date) return '';
 

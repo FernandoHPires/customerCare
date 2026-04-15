@@ -50,9 +50,9 @@
                     <tr v-for="row in filteredData" :key="row.id">
                         <td>{{ row.nome }}</td>
                         <td>{{ row.nomeFantasia }}</td>
-                        <td>{{ row.cnpj }}</td>
+                        <td>{{ formatCnpj(row.cnpj) }}</td>
                         <td>{{ row.email }}</td>
-                        <td>{{ row.telefone }}</td>
+                        <td>{{ formatPhone(row.telefone) }}</td>
                         <td>
                             <span
                                 class="badge"
@@ -117,6 +117,7 @@
                                 type="text"
                                 class="form-control"
                                 v-model="form.cnpj"
+                                v-mask="'cnpj'"
                                 placeholder="00.000.000/0000-00"
                             />
                         </div>
@@ -135,6 +136,7 @@
                                 type="text"
                                 class="form-control"
                                 v-model="form.telefone"
+                                v-mask="'phone'"
                                 placeholder="(00) 00000-0000"
                             />
                         </div>

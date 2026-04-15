@@ -50,7 +50,7 @@
                         <td>{{ row.fullName }}</td>
                         <td>{{ row.username }}</td>
                         <td>{{ row.email }}</td>
-                        <td>{{ row.phone }}</td>
+                        <td>{{ formatPhone(row.phone) }}</td>
                         <td>{{ row.companyName }}</td>
                         <td class="text-end">
                             <button
@@ -132,6 +132,7 @@
                                 type="text"
                                 class="form-control"
                                 v-model="form.phone"
+                                v-mask="'phone'"
                                 placeholder="(00) 00000-0000"
                             />
                         </div>
