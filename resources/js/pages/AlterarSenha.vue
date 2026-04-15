@@ -56,6 +56,30 @@
                             <small :class="forcaTextoClass">{{ forcaTexto }}</small>
                         </div>
 
+                        <!-- Confirmar Nova Senha -->
+                        <div class="mt-3">
+                            <label class="form-label">Confirmar Nova Senha <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input
+                                    :type="show.confirmar ? 'text' : 'password'"
+                                    class="form-control"
+                                    :class="form.confirmarSenha && form.novaSenha !== form.confirmarSenha ? 'is-invalid' : ''"
+                                    v-model="form.confirmarSenha"
+                                    placeholder="Repita a nova senha"
+                                    autocomplete="new-password"
+                                />
+                                <button class="btn btn-outline-secondary" type="button" @click="show.confirmar = !show.confirmar">
+                                    <i :class="show.confirmar ? 'bi-eye-slash' : 'bi-eye'"></i>
+                                </button>
+                            </div>
+                            <small
+                                v-if="form.confirmarSenha && form.novaSenha !== form.confirmarSenha"
+                                class="text-danger"
+                            >
+                                As senhas não coincidem.
+                            </small>
+                        </div>
+
                         <!-- Requisitos -->
                         <div class="requisitos mt-2">
                             <small :class="req.minimo ? 'text-success' : 'text-muted'">
@@ -77,29 +101,6 @@
                         </div>
                     </div>
 
-                    <!-- Confirmar Nova Senha -->
-                    <div class="col-12">
-                        <label class="form-label">Confirmar Nova Senha <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <input
-                                :type="show.confirmar ? 'text' : 'password'"
-                                class="form-control"
-                                :class="form.confirmarSenha && form.novaSenha !== form.confirmarSenha ? 'is-invalid' : ''"
-                                v-model="form.confirmarSenha"
-                                placeholder="Repita a nova senha"
-                                autocomplete="new-password"
-                            />
-                            <button class="btn btn-outline-secondary" type="button" @click="show.confirmar = !show.confirmar">
-                                <i :class="show.confirmar ? 'bi-eye-slash' : 'bi-eye'"></i>
-                            </button>
-                        </div>
-                        <small
-                            v-if="form.confirmarSenha && form.novaSenha !== form.confirmarSenha"
-                            class="text-danger"
-                        >
-                            As senhas não coincidem.
-                        </small>
-                    </div>
 
                 </div>
             </div>

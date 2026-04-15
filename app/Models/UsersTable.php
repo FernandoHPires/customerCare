@@ -25,6 +25,7 @@ class UsersTable extends Model {
         'default_company_id',
         'perfil_id',
         'admin',
+        'session_token',
         'login_attempts',
         'locked_until',
         'last_login_attempt',

@@ -3,6 +3,7 @@
 namespace App\AUni\BO;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\AUni\Bean\ILogger;
 use App\Models\UsersTable;
 
@@ -17,7 +18,7 @@ class LoginBO {
         $this->logger = $logger;
     }
 
-    public function login($username, $password, $request) {
+    public function login($username, $password, $request, $force = false) {
 
         $this->logger->info('LoginBO->login', ['username' => $username]);
 
@@ -46,10 +47,25 @@ class LoginBO {
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            // Sucesso — zera tentativas
-            $user->login_attempts    = 0;
-            $user->locked_until      = null;
+            // Limpa token fantasma: sessão expirou naturalmente, arquivo já não existe
+            if (!empty($user->session_token) && !$this->isSessaoAtiva($user->session_token)) {
+                $user->session_token = null;
+            }
+
+            // Sessão realmente ativa — pergunta ao usuário se deseja continuar
+            if (!$force && !empty($user->session_token)) {
+                Auth::logout(); // Remove a autenticação mas mantém a sessão/CSRF válidos
+                return [
+                    'status'  => 'session_active',
+                    'message' => 'Já existe uma sessão ativa para este usuário. Deseja continuar e encerrar a sessão anterior?',
+                ];
+            }
+
+            // Sucesso — zera tentativas e registra o token da sessão atual
+            $user->login_attempts     = 0;
+            $user->locked_until       = null;
             $user->last_login_attempt = now();
+            $user->session_token      = $request->session()->getId();
             $user->save();
 
             return ['status' => 'success', 'message' => ''];
@@ -87,9 +103,35 @@ class LoginBO {
         ];
     }
 
+    /**
+     * Verifica se a sessão ainda está ativa no servidor (driver: file).
+     * O Laravel não apaga arquivos de sessão imediatamente — verifica
+     * se o arquivo foi modificado dentro do SESSION_LIFETIME.
+     */
+    private function isSessaoAtiva($sessionToken) {
+        if (empty($sessionToken)) return false;
+
+        $arquivo = storage_path('framework/sessions/' . $sessionToken);
+
+        if (!file_exists($arquivo)) return false;
+
+        $lifetime     = config('session.lifetime') * 60; // minutos → segundos
+        $ultimaAtividade = filemtime($arquivo);
+
+        return (time() - $ultimaAtividade) < $lifetime;
+    }
+
     public function logout($request) {
 
+        // Invalida o token — usa UUID aleatório para derrubar qualquer sessão ainda aberta
+        $user = Auth::user();
+        if ($user) {
+            UsersTable::where('user_id', $user->user_id)->update(['session_token' => Str::uuid()]);
+        }
+
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return ['status' => 'success', 'message' => ''];
     }

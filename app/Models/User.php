@@ -15,7 +15,7 @@ class User extends Model implements AuthenticatableContract {
     protected $primaryKey = 'user_id';
 
     public function getAuthPassword() {
-        return Hash::make($this->user_password);
+        return $this->user_password;
     }
 
 }

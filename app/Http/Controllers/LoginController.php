@@ -24,7 +24,7 @@ class LoginController extends Controller {
         ]);
 
         $loginBO = new LoginBO($this->logger);
-        $response = $loginBO->login($request->username, $request->password, $request);
+        $response = $loginBO->login($request->username, $request->password, $request, $request->boolean('force', false));
 
         return response()->json($response, 200);
     }

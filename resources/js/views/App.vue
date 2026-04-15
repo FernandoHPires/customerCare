@@ -173,6 +173,29 @@
     <div class="backdrop" id="backdrop" style="display: none">
         <div class="d-flex justify-content-center h-100"></div>
     </div>
+
+    <!-- Modal de inatividade -->
+    <div v-if="inactivityModal" class="inactivity-overlay">
+        <div class="inactivity-card">
+            <div class="inactivity-icon">
+                <i class="bi-clock-history"></i>
+            </div>
+            <h5 class="mb-2">Sua sessão está prestes a expirar</h5>
+            <p class="text-muted mb-3">
+                Por inatividade, você será desconectado em
+            </p>
+            <div class="inactivity-countdown">{{ inactivityCountdownFormatted }}</div>
+            <p class="text-muted mt-2 mb-4 small">Deseja continuar conectado?</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-outline-secondary" @click="doLogout()">
+                    <i class="bi-box-arrow-right me-1"></i>Sair agora
+                </button>
+                <button class="btn btn-primary" @click="continueSession()">
+                    <i class="bi-check-lg me-1"></i>Continuar conectado
+                </button>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -214,18 +237,85 @@ export default {
             ],
             user: {},
             menus: [],
+            // Inatividade
+            inactivityModal:     false,
+            inactivityCountdown: 300,
+            _idleTimer:          null,
+            _countdownTimer:     null,
         };
+    },
+    computed: {
+        inactivityCountdownFormatted() {
+            const m = Math.floor(this.inactivityCountdown / 60);
+            const s = this.inactivityCountdown % 60;
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        },
     },
     mounted() {
         this.checkSession()
         this.getCurrentUser()
         this.getMenu()
+        this.startInactivityWatch()
 
         this.$router.isReady().then(() => {
             this.currentPage = this.$route.path
         });
     },
     methods: {
+        // ── Inatividade ──────────────────────────────────────────────────────
+        startInactivityWatch() {
+            const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+            events.forEach(evt => window.addEventListener(evt, this.onUserActivity, { passive: true }));
+            this.resetIdleTimer();
+        },
+
+        onUserActivity() {
+            if (!this.inactivityModal) {
+                this.resetIdleTimer();
+            }
+        },
+
+        resetIdleTimer() {
+            clearTimeout(this._idleTimer);
+            this._idleTimer = setTimeout(() => {
+                this.showInactivityWarning();
+            }, 25 * 60 * 1000); // 25 minutos sem atividade
+        },
+
+        showInactivityWarning() {
+            this.inactivityModal     = true;
+            this.inactivityCountdown = 300; // 5 minutos para reagir
+
+            this._countdownTimer = setInterval(() => {
+                this.inactivityCountdown--;
+
+                if (this.inactivityCountdown <= 0) {
+                    clearInterval(this._countdownTimer);
+                    this.inactivityModal = false;
+                    this.doLogout();
+                }
+            }, 1000);
+        },
+
+        continueSession() {
+            clearInterval(this._countdownTimer);
+            this.inactivityModal     = false;
+            this.inactivityCountdown = 300;
+            this.resetIdleTimer();
+
+            // Renova a sessão no servidor
+            this.axios({ method: 'get', url: '/web/check-session' })
+                .catch(() => { window.location.href = '/'; });
+        },
+
+        doLogout() {
+            clearTimeout(this._idleTimer);
+            clearInterval(this._countdownTimer);
+            this.inactivityModal = false;
+            this.logout();
+        },
+        // ─────────────────────────────────────────────────────────────────────
+
         logout: function () {
             this.axios({
                 method: "get",
@@ -351,6 +441,39 @@ export default {
         background-color: #f5f7f9;
         color: #1C4D64;
         border-top: 1px solid #dce3e8;
-    }    
+    }
+
+    .inactivity-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .inactivity-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 2rem 2.5rem;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+
+    .inactivity-icon {
+        font-size: 2.5rem;
+        color: #ffc107;
+        margin-bottom: 0.75rem;
+    }
+
+    .inactivity-countdown {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #dc3545;
+        letter-spacing: 2px;
+    }
 </style>
 

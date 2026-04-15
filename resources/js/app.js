@@ -23,6 +23,22 @@ app.directive('blur', {
 
 //Axios
 axios.defaults.withCredentials = true
+
+// Interceptor global: 401 → salva mensagem e redireciona para login
+axios.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response && error.response.status === 401) {
+            if (!window.location.pathname.startsWith('/login')) {
+                const msg = error.response?.data?.message
+                if (msg) sessionStorage.setItem('auth_alert', msg)
+                window.location.href = '/'
+            }
+        }
+        return Promise.reject(error)
+    }
+)
+
 app.config.globalProperties.axios = axios
 
 //Coreui

@@ -13,8 +13,8 @@ class Utils {
 
         $fields = [
             'provider'     => $provider,
-            'fromAddress'  => 'it@amurgroup.ca',
-            'fromName'     => 'Amur Financial Group - IT',
+            'fromAddress'  => 'ti@unigestao.com',
+            'fromName'     => 'UNI - Gestão de Negócios',
             'toAddresses'  => $toAddresses,
             'subject'      => $subject,
             'bodyType'     => 'html',
@@ -23,7 +23,7 @@ class Utils {
         ];
     
         $httpRequest = new HttpRequest($logger);
-        $httpRequest->setUrl(env('AMUR_API_ENDPOINT') . '/email/send-bulk-email');        
+        $httpRequest->setUrl('/email/send-bulk-email');        
         $httpRequest->setMethod('post');
         $httpRequest->setContentType('json');
         $httpRequest->setAccept('json');

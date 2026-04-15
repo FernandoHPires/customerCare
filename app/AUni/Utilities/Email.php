@@ -39,8 +39,8 @@ class Email {
     private function local() {
         $fields = array(
             'provider' => $this->provider,
-            'fromAddress' => 'it@amurgroup.ca',
-            'fromName' => 'Amur IT',
+            'fromAddress' => 'ti@unigestao.com',
+            'fromName' => 'UNI TI',
             'toAddress' => $this->toAddress,
             'subject' => $this->subject,
             'bodyType' => $this->bodyType,
@@ -48,7 +48,7 @@ class Email {
         );
 
         $httpRequest = new HttpRequest($this->logger);
-        $httpRequest->setUrl(env('AMUR_API_ENDPOINT') . '/email/send-email');
+        $httpRequest->setUrl('/email/send-email');
         $httpRequest->setMethod('post');
         $httpRequest->setContentType('json');
         $httpRequest->setAccept('json');
