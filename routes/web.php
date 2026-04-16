@@ -12,6 +12,7 @@ use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AlterarSenhaController;
 use App\Http\Controllers\PermissaoController;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\ClientViewController;
 
 
 
@@ -40,6 +41,8 @@ Route::group(['middleware' => 'webAuthentication'], function () {
 
     
     Route::get('web/current-user', [UserController::class, 'current']);
+    Route::post('web/client-view/{companyId}', [ClientViewController::class, 'set']);
+    Route::delete('web/client-view', [ClientViewController::class, 'clear']);
     Route::get('web/menus', [UserController::class, 'getMenus']);
 
     Route::post('/web/alterar-senha', [AlterarSenhaController::class, 'alterarSenha']);

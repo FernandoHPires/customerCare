@@ -51,6 +51,13 @@ class UserBO {
     public function show($id) {
 
         $userObj = UsersTable::query()
+            ->leftJoin('clientes as c_default', 'c_default.id', '=', 'users_table.default_company_id')
+            ->leftJoin('clientes as c_active',  'c_active.id',  '=', 'users_table.active_company_id')
+            ->select(
+                'users_table.*',
+                'c_default.nome as company_name',
+                'c_active.nome  as active_company_name'
+            )
             ->where('user_id', $id)
             ->first();
 
@@ -59,17 +66,21 @@ class UserBO {
         }
 
         return [
-            'id'           => $userObj->user_id,
-            'username'     => $userObj->user_name,
-            'fullName'     => $userObj->user_fname . ' ' . $userObj->user_lname,
-            'firstName'    => $userObj->user_fname,
-            'lastName'     => $userObj->user_lname,
-            'email'        => $userObj->user_email,
+            'id'                => $userObj->user_id,
+            'username'          => $userObj->user_name,
+            'fullName'          => $userObj->user_fname . ' ' . $userObj->user_lname,
+            'firstName'         => $userObj->user_fname,
+            'lastName'          => $userObj->user_lname,
+            'email'             => $userObj->user_email,
             'isAdmin'           => $userObj->admin,
             'companyId'         => $userObj->default_company_id,
+            'companyName'       => $userObj->company_name,
+            'activeCompanyId'   => $userObj->active_company_id,
+            'activeCompanyName' => $userObj->active_company_name,
             'perfilId'          => $userObj->perfil_id,
             'resetRequest'      => (bool) $userObj->reset_request,
             'twoFactorEnabled'  => (bool) $userObj->two_factor_enabled,
+            'isUniUser'         => $userObj->is_uni_user === 'S',
         ];
     }
 

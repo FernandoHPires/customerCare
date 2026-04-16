@@ -76,8 +76,21 @@
                                 <i class="bi-person-circle"></i>
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-end pt-0">
+                            <div class="dropdown-menu dropdown-menu-end pt-0" style="min-width: 260px;">
                                 <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">Configurações</div>
+
+                                <!-- Visão do Cliente (só para usuários UNI) -->
+                                <template v-if="user.isUniUser && !user.resetRequest">
+                                    <div class="px-3 pb-2">
+                                        <small class="text-muted d-block mb-1"><i class="bi-eye me-1"></i>Visão do cliente</small>
+                                        <select class="form-select form-select-sm" v-model="selectedCompanyId" @change="switchCompany()">
+                                            <option :value="null">— Minha visão (UNI) —</option>
+                                            <option :value="0">Todas as empresas</option>
+                                            <option v-for="c in clientes" :key="c.id" :value="c.id">{{ c.nome }}</option>
+                                        </select>
+                                    </div>
+                                    <hr class="dropdown-divider">
+                                </template>
 
                                 <template v-if="!user.resetRequest">
                                     <a class="dropdown-item" href="#" @click="toPage({ path: '/alterar-senha' })">
@@ -94,6 +107,16 @@
                     </ul>
                 </div>
             </header>
+
+            <!-- Banner de visão do cliente -->
+            <div v-if="user.isUniUser && user.activeCompanyId !== null && user.activeCompanyId !== undefined" class="client-view-banner d-flex align-items-center px-3 py-2 gap-2">
+                <i class="bi-eye-fill"></i>
+                <span v-if="user.activeCompanyId === 0">Visão: <strong>Todas as empresas</strong></span>
+                <span v-else>Visão do cliente: <strong>{{ user.activeCompanyName }}</strong></span>
+                <button class="btn btn-sm btn-warning ms-auto py-0" @click="clearClientView()">
+                    <i class="bi-x-lg me-1"></i>Voltar à minha visão
+                </button>
+            </div>
 
             <div class="body flex-grow-1 px-3">
                 <div class="container-fluid">
@@ -239,6 +262,8 @@ export default {
             ],
             user: {},
             menus: [],
+            clientes: [],
+            selectedCompanyId: null,
             // Inatividade
             inactivityModal:     false,
             inactivityCountdown: 300,
@@ -257,6 +282,7 @@ export default {
         this.checkSession()
         this.getCurrentUser()
         this.getMenu()
+        this.getClientes()
         this.startInactivityWatch()
 
         this.$router.isReady().then(() => {
@@ -377,6 +403,57 @@ export default {
             this.toPage({path: pageName}, false)
         },
 
+        switchCompany: function () {
+            // null = minha visão → limpa
+            if (this.selectedCompanyId === null) {
+                this.clearClientView()
+                return
+            }
+
+            this.axios({ method: 'post', url: '/web/client-view/' + this.selectedCompanyId })
+                .then((response) => {
+                    if (this.checkApiResponse(response)) {
+                        this.user.activeCompanyId   = this.selectedCompanyId
+                        this.user.activeCompanyName = this.selectedCompanyId === 0
+                            ? 'Todas as empresas'
+                            : this.clientes.find(c => c.id === this.selectedCompanyId)?.nome
+                        this.setUser(this.user)
+                        this.reloadPage++
+                    }
+                })
+                .catch(() => {
+                    this.alertMessage = 'Erro ao trocar empresa.'
+                    this.showAlert('error')
+                })
+        },
+
+        clearClientView: function () {
+            this.axios({ method: 'delete', url: '/web/client-view' })
+                .then((response) => {
+                    if (this.checkApiResponse(response)) {
+                        this.user.activeCompanyId   = null
+                        this.user.activeCompanyName = null
+                        this.selectedCompanyId      = null
+                        this.setUser(this.user)
+                        this.reloadPage++
+                    }
+                })
+                .catch(() => {
+                    this.alertMessage = 'Erro ao limpar visão.'
+                    this.showAlert('error')
+                })
+        },
+
+        getClientes: function () {
+            this.axios({ method: 'get', url: '/web/clientes' })
+                .then((response) => {
+                    if (this.checkApiResponse(response)) {
+                        this.clientes = response.data.data
+                    }
+                })
+                .catch(() => {})
+        },
+
         getCurrentUser: function () {
             this.axios({
                 method: "get",
@@ -389,6 +466,7 @@ export default {
                     console.log('Current User:', this.user)
 
                     this.setUser(this.user)
+                    this.selectedCompanyId = this.user.activeCompanyId ?? null
 
                     // Força troca de senha se admin definiu reset obrigatório
                     if (this.user.resetRequest && this.$route.path !== '/alterar-senha') {
@@ -482,6 +560,13 @@ export default {
         font-size: 2.5rem;
         color: #ffc107;
         margin-bottom: 0.75rem;
+    }
+
+    .client-view-banner {
+        background-color: #fff3cd;
+        border-bottom: 1px solid #ffc107;
+        color: #664d03;
+        font-size: 0.875rem;
     }
 
     .inactivity-countdown {

@@ -30,14 +30,18 @@ class PortifolioBO {
         ->where('user_id', $userId)
         ->first();
 
-        if ($usersTable) {    
+        if ($usersTable) {
+            $isUniUser = $usersTable->is_uni_user === 'S';
+            $activeCompanyId = $usersTable->active_company_id;
             $data = [
-                'userId' => $usersTable->user_id,
-                'company' => $usersTable->default_company_id
+                'userId'  => $usersTable->user_id,
+                'company' => ($isUniUser && $activeCompanyId !== null)
+                    ? $activeCompanyId
+                    : $usersTable->default_company_id
             ];
         } else {
             $data = [
-                'userId' => 0,
+                'userId'  => 0,
                 'company' => 0
             ];
         }
@@ -57,14 +61,24 @@ class PortifolioBO {
 
         if (!$usersTable) return [];
 
-        $companyId = $usersTable->default_company_id;
-        $clientes = Clientes::find($companyId);
+        $isUniUser = $usersTable->is_uni_user === 'S';
+        $activeCompanyId = $usersTable->active_company_id;
 
-        if (!$clientes) return [];
+        // Todas as empresas (active_company_id = 0, somente uni users)
+        if ($isUniUser && $activeCompanyId === 0) {
+            $empreendimentos = Empreendimentos::query()->get();
+        } else {
+            $companyId = ($isUniUser && $activeCompanyId)
+                ? $activeCompanyId
+                : $usersTable->default_company_id;
 
-        $empreendimentos = Empreendimentos::query()
-            ->where('cliente_id', $clientes->id)
-            ->get();
+            $clientes = Clientes::find($companyId);
+            if (!$clientes) return [];
+
+            $empreendimentos = Empreendimentos::query()
+                ->where('cliente_id', $clientes->id)
+                ->get();
+        }
 
         $result = [];
 
@@ -108,17 +122,26 @@ class PortifolioBO {
 
         if ($usersTable) {
 
-            $companyId = $usersTable->default_company_id;
+            $isUniUser = $usersTable->is_uni_user === 'S';
+            $activeCompanyId = $usersTable->active_company_id;
 
-            $clientes = Clientes::find($companyId);
+            // Todas as empresas (active_company_id = 0, somente uni users)
+            if ($isUniUser && $activeCompanyId === 0) {
+                $empreendimentos = Empreendimentos::query()->get();
+            } else {
+                $companyId = ($isUniUser && $activeCompanyId)
+                    ? $activeCompanyId
+                    : $usersTable->default_company_id;
 
-            if ($clientes) {
+                $clientes = Clientes::find($companyId);
+                if (!$clientes) return $porfilioView;
 
                 $empreendimentos = Empreendimentos::query()
-                ->where('cliente_id', $clientes->id)
-                ->get();
+                    ->where('cliente_id', $clientes->id)
+                    ->get();
+            }
 
-                foreach ($empreendimentos as $empreendimento) {
+            foreach ($empreendimentos as $empreendimento) {
 
                     $viabilidade = Viabilidades::query()
                     ->where('empreendimento_id', $empreendimento->id)
@@ -172,7 +195,6 @@ class PortifolioBO {
                         'previsaoEntrega'            => $empreendimento->previsao_entrega,
                         'statusEmpreendimento'       => $empreendimento->status_empreendimento
                     ];
-                }
             }
         }
         
