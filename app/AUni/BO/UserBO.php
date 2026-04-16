@@ -8,6 +8,7 @@ use App\Models\Clientes;
 use App\Models\Perfis;
 use App\Models\PerfilMenu;
 use App\Models\Menu;
+use App\Models\PasswordHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -58,15 +59,17 @@ class UserBO {
         }
 
         return [
-            'id'        => $userObj->user_id,
-            'username'  => $userObj->user_name,
-            'fullName'  => $userObj->user_fname . ' ' . $userObj->user_lname,
-            'firstName' => $userObj->user_fname,
-            'lastName'  => $userObj->user_lname,
-            'email'     => $userObj->user_email,
-            'isAdmin'   => $userObj->admin,
-            'companyId' => $userObj->default_company_id,
-            'perfilId'  => $userObj->perfil_id,
+            'id'           => $userObj->user_id,
+            'username'     => $userObj->user_name,
+            'fullName'     => $userObj->user_fname . ' ' . $userObj->user_lname,
+            'firstName'    => $userObj->user_fname,
+            'lastName'     => $userObj->user_lname,
+            'email'        => $userObj->user_email,
+            'isAdmin'           => $userObj->admin,
+            'companyId'         => $userObj->default_company_id,
+            'perfilId'          => $userObj->perfil_id,
+            'resetRequest'      => (bool) $userObj->reset_request,
+            'twoFactorEnabled'  => (bool) $userObj->two_factor_enabled,
         ];
     }
 
@@ -130,7 +133,8 @@ class UserBO {
                 'companyName' => $value->company_name,
                 'perfilId'    => $value->perfil_id,
                 'perfilNome'  => $value->perfil_nome,
-                'isAdmin'     => $value->admin,
+                'isAdmin'          => $value->admin,
+                'twoFactorEnabled' => (bool) $value->two_factor_enabled,
             ];
         }
 
@@ -148,17 +152,71 @@ class UserBO {
         try {
 
             if ($fields->action == 'Adicionar') {
+
+                // Valida força da senha
+                $validacao = $this->validarForcaSenha($fields->password);
+                if (!$validacao['ok']) {
+                    return ['ok' => false, 'message' => $validacao['message']];
+                }
+
                 $user = new UsersTable();
                 $user->created_by    = $loggedUserId;
                 $user->user_password = Hash::make($fields->password);
+                $user->reset_request = 1; // Força troca de senha no primeiro acesso
+
             } else {
                 $user = UsersTable::find($fields->id);
                 if (!$user) {
                     return false;
                 }
                 $user->updated_by = $loggedUserId;
+
                 if (!empty($fields->password)) {
-                    $user->user_password = Hash::make($fields->password);
+
+                    // Valida força da senha
+                    $validacao = $this->validarForcaSenha($fields->password);
+                    if (!$validacao['ok']) {
+                        return ['ok' => false, 'message' => $validacao['message']];
+                    }
+
+                    // Verifica se a nova senha é igual à senha atual
+                    if (Hash::check($fields->password, $user->user_password)) {
+                        return ['ok' => false, 'message' => 'A nova senha não pode ser igual à senha atual.'];
+                    }
+
+                    // Verifica histórico das últimas 5 senhas
+                    $historico = PasswordHistory::where('user_id', $user->user_id)
+                        ->orderBy('created_at', 'desc')
+                        ->limit(5)
+                        ->get();
+
+                    foreach ($historico as $registro) {
+                        if (Hash::check($fields->password, $registro->password_hash)) {
+                            return ['ok' => false, 'message' => 'A nova senha não pode ser igual a uma das últimas 5 senhas utilizadas.'];
+                        }
+                    }
+
+                    // Salva senha antiga no histórico
+                    PasswordHistory::create([
+                        'user_id'       => $user->user_id,
+                        'password_hash' => $user->user_password,
+                        'created_at'    => now(),
+                        'created_by'    => $loggedUserId,
+                    ]);
+
+                    // Gera hash da nova senha
+                    $novoHash = Hash::make($fields->password);
+
+                    // Salva nova senha no histórico também
+                    PasswordHistory::create([
+                        'user_id'       => $user->user_id,
+                        'password_hash' => $novoHash,
+                        'created_at'    => now(),
+                        'created_by'    => $loggedUserId,
+                    ]);
+
+                    $user->user_password = $novoHash;
+                    $user->reset_request = 1; // Força troca de senha na próxima entrada
                 }
             }
 
@@ -171,6 +229,7 @@ class UserBO {
             $user->default_company_id = $fields->companyId;
             $user->perfil_id          = $fields->perfilId ?? null;
             $user->admin              = $fields->isAdmin ? 1 : 0;
+            $user->two_factor_enabled = $fields->twoFactorEnabled ? 1 : 0;
             $user->save();
 
             DB::commit();
@@ -182,6 +241,18 @@ class UserBO {
             DB::rollback();
             return false;
         }
+    }
+
+    private function validarForcaSenha($senha) {
+        if (strlen($senha) < 8)
+            return ['ok' => false, 'message' => 'A senha deve ter no mínimo 8 caracteres.'];
+        if (!preg_match('/[A-Z]/', $senha))
+            return ['ok' => false, 'message' => 'A senha deve conter pelo menos uma letra maiúscula.'];
+        if (!preg_match('/[0-9]/', $senha))
+            return ['ok' => false, 'message' => 'A senha deve conter pelo menos um número.'];
+        if (!preg_match('/[^A-Za-z0-9]/', $senha))
+            return ['ok' => false, 'message' => 'A senha deve conter pelo menos um caractere especial (!@#$%...).'];
+        return ['ok' => true, 'message' => ''];
     }
 
     public function deleteUser($id) {

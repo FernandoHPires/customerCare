@@ -8,28 +8,8 @@ use Illuminate\Support\Facades\Log;
 
 class Utils {
 
-    public static function sendEmail($toAddresses, $subject, $body, $provider = 'local', $attachments = null) {
-        $logger = new Logger(); 
-
-        $fields = [
-            'provider'     => $provider,
-            'fromAddress'  => 'ti@unigestao.com',
-            'fromName'     => 'UNI - Gestão de Negócios',
-            'toAddresses'  => $toAddresses,
-            'subject'      => $subject,
-            'bodyType'     => 'html',
-            'body'         => $body,
-            'attachments'  => $attachments
-        ];
-    
-        $httpRequest = new HttpRequest($logger);
-        $httpRequest->setUrl('/email/send-bulk-email');        
-        $httpRequest->setMethod('post');
-        $httpRequest->setContentType('json');
-        $httpRequest->setAccept('json');
-        $httpRequest->setFieldType('raw');
-        $httpRequest->setFields(json_encode($fields));
-        $httpRequest->exec();
+    public static function sendEmail($toAddresses, $subject, $body, $provider = 'local', $attachments = [], $cc = [], $bcc = []) {
+        Email::send($toAddresses, $subject, $body, $cc, $bcc, $attachments ?? []);
     }
 
     public static function processdata($fields = []) {

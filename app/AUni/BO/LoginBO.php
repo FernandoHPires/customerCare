@@ -5,6 +5,7 @@ namespace App\AUni\BO;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\AUni\Bean\ILogger;
+use App\AUni\BO\TwoFactorBO;
 use App\Models\UsersTable;
 
 class LoginBO {
@@ -58,6 +59,21 @@ class LoginBO {
                 return [
                     'status'  => 'session_active',
                     'message' => 'Já existe uma sessão ativa para este usuário. Deseja continuar e encerrar a sessão anterior?',
+                ];
+            }
+
+            // 2FA ativo — gera código e aguarda verificação
+            if ($user->two_factor_enabled) {
+                $twoFactor = new TwoFactorBO($this->logger);
+                $pendingId = $user->user_id;
+                Auth::logout(); // Remove autenticação mas mantém a sessão/CSRF válidos
+                $request->session()->put('two_factor_pending_user_id', $pendingId);
+                $twoFactor->generateAndSend($user);
+
+                return [
+                    'status'      => 'two_factor_required',
+                    'maskedEmail' => $twoFactor->maskEmail($user->user_email),
+                    'message'     => '',
                 ];
             }
 

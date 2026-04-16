@@ -11,6 +11,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\AlterarSenhaController;
 use App\Http\Controllers\PermissaoController;
+use App\Http\Controllers\TwoFactorController;
 
 
 
@@ -22,6 +23,10 @@ Route::group(['middleware' => 'noAuthentication'], function () {
 
     //Login
     Route::post('api/login', [LoginController::class, 'login']);
+
+    // 2FA (parte do fluxo de login — sem autenticação completa ainda)
+    Route::post('api/two-factor/verify', [TwoFactorController::class, 'verify']);
+    Route::post('api/two-factor/resend', [TwoFactorController::class, 'resend']);
 
 });
 

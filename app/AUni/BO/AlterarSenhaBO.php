@@ -41,6 +41,11 @@ class AlterarSenhaBO {
             return $validacao;
         }
 
+        // Verifica se a nova senha é igual à senha atual
+        if (Hash::check($fields->novaSenha, $user->user_password)) {
+            return ['ok' => false, 'message' => 'A nova senha não pode ser igual à senha atual.'];
+        }
+
         // Verifica histórico das últimas 5 senhas
         $historico = PasswordHistory::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
@@ -65,20 +70,21 @@ class AlterarSenhaBO {
                 'created_by'    => $userId,
             ]);
 
-            // Mantém apenas os últimos N registros no histórico
-            $ids = PasswordHistory::where('user_id', $userId)
-                ->orderBy('created_at', 'desc')
-                ->pluck('id')
-                ->skip(self::HISTORICO_LIMITE)
-                ->values();
+            // Gera hash da nova senha
+            $novoHash = Hash::make($fields->novaSenha);
 
-            if ($ids->count() > 0) {
-                PasswordHistory::whereIn('id', $ids)->delete();
-            }
+            // Salva nova senha no histórico também
+            PasswordHistory::create([
+                'user_id'       => $userId,
+                'password_hash' => $novoHash,
+                'created_at'    => now(),
+                'created_by'    => $userId,
+            ]);
 
-            // Atualiza a senha
-            $user->user_password = Hash::make($fields->novaSenha);
+            // Atualiza a senha e limpa o flag de reset obrigatório
+            $user->user_password = $novoHash;
             $user->updated_by    = $userId;
+            $user->reset_request = 0;
             $user->save();
 
             DB::commit();

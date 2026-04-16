@@ -4,7 +4,7 @@
     </template>
 
     <template v-else-if="currentPage !== ''">
-        <div v-bind:class="['sidebar sidebar-dark sidebar-fixed bg-brand', (arrayStartsWith(collapseMenuRoutes, currentPage)) ? 'sidebar-narrow-unfoldable' : '']" id="sidebar">
+        <div v-if="!user.resetRequest" v-bind:class="['sidebar sidebar-dark sidebar-fixed bg-brand', (arrayStartsWith(collapseMenuRoutes, currentPage)) ? 'sidebar-narrow-unfoldable' : '']" id="sidebar">
             
             <div class="sidebar-header">
                 <div class="sidebar-brand w-100">
@@ -62,6 +62,7 @@
             <header class="header header-sticky bg-brand-light mb-4">
                 <div class="container-fluid">
                     <button
+                        v-if="!user.resetRequest"
                         class="header-toggler px-md-0 me-md-3 d-md-none text-dark"
                         type="button"
                         @click="toggleSidebar()"
@@ -78,12 +79,13 @@
                             <div class="dropdown-menu dropdown-menu-end pt-0">
                                 <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">Configurações</div>
 
-                                <a class="dropdown-item" href="#" @click="toPage({ path: '/alterar-senha' })">
-                                    <i class="bi bi-lock me-2"></i>Alterar minha senha
-                                </a>
+                                <template v-if="!user.resetRequest">
+                                    <a class="dropdown-item" href="#" @click="toPage({ path: '/alterar-senha' })">
+                                        <i class="bi bi-lock me-2"></i>Alterar minha senha
+                                    </a>
+                                    <hr class="dropdown-divider">
+                                </template>
 
-                                <hr class="dropdown-divider">
-                                
                                 <a class="dropdown-item" href="#" @click="logout()">
                                     <i class="bi bi-box-arrow-right me-2"></i>Logout
                                 </a>
@@ -352,6 +354,13 @@ export default {
                 return
             }
 
+            // Bloqueia navegação se há reset de senha obrigatório pendente
+            if (this.user.resetRequest && menu.path !== '/alterar-senha') {
+                this.alertMessage = 'Você precisa alterar sua senha antes de continuar.'
+                this.showAlert('warning')
+                return
+            }
+
             this.$router.push(menu.path)
 
             if(screen.width < 960 && toggle) {
@@ -380,6 +389,12 @@ export default {
                     console.log('Current User:', this.user)
 
                     this.setUser(this.user)
+
+                    // Força troca de senha se admin definiu reset obrigatório
+                    if (this.user.resetRequest && this.$route.path !== '/alterar-senha') {
+                        this.$router.push('/alterar-senha')
+                        this.currentPage = '/alterar-senha'
+                    }
                 }
             })
             .catch((error) => {

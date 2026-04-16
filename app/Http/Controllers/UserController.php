@@ -46,11 +46,17 @@ class UserController extends Controller {
         $res = $userBO->saveUser($fields);
 
         $response = new Response();
-        if ($res !== false) {
+
+        // Retorno com mensagem de erro específica (ex: senha fraca, histórico)
+        if (is_array($res) && isset($res['ok']) && !$res['ok']) {
+            $response->status  = 'error';
+            $response->message = $res['message'];
+        } elseif ($res !== false) {
             $response->status = 'success';
-            $response->data = ['userId' => $res];
+            $response->data   = ['userId' => $res];
         } else {
-            $response->status = 'error';
+            $response->status  = 'error';
+            $response->message = 'Erro ao salvar usuário.';
         }
 
         return response()->json($response, 200);

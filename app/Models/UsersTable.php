@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class UsersTable extends Model {
+class UsersTable extends Authenticatable {
 
     use SoftDeletes;
 
@@ -26,6 +26,11 @@ class UsersTable extends Model {
         'perfil_id',
         'admin',
         'session_token',
+        'reset_request',
+        'two_factor_enabled',
+        'two_factor_code',
+        'two_factor_expires_at',
+        'two_factor_attempts',
         'login_attempts',
         'locked_until',
         'last_login_attempt',
@@ -39,7 +44,13 @@ class UsersTable extends Model {
     ];
 
     protected $casts = [
-        'locked_until'        => 'datetime',
-        'last_login_attempt'  => 'datetime',
+        'locked_until'           => 'datetime',
+        'last_login_attempt'     => 'datetime',
+        'two_factor_expires_at'  => 'datetime',
     ];
+
+    // Necessário para Auth::login() saber qual coluna é a senha
+    public function getAuthPassword(): string {
+        return $this->user_password;
+    }
 }

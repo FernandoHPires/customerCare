@@ -120,9 +120,13 @@
                             <input
                                 type="email"
                                 class="form-control"
+                                :class="form.email && !emailValido ? 'is-invalid' : ''"
                                 v-model="form.email"
                                 placeholder="email@exemplo.com"
                             />
+                            <div v-if="form.email && !emailValido" class="invalid-feedback">
+                                Informe um e-mail válido.
+                            </div>
                         </div>
 
                         <!-- Telefone e Cliente -->
@@ -170,6 +174,7 @@
                                 placeholder="Pesquisar perfil..."
                             />
                         </div>
+                        <!-- Senha -->
                         <div class="col-md-6">
                             <label class="form-label">
                                 Senha <span class="text-danger">*</span>
@@ -190,7 +195,37 @@
                                     <i :class="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                                 </button>
                             </div>
+
+                            <!-- Barra de força -->
+                            <div v-if="form.password" class="mt-2">
+                                <div class="d-flex gap-1 mb-1">
+                                    <div v-for="i in 4" :key="i" class="forca-barra" :class="forcaClass(i)"></div>
+                                </div>
+                                <small :class="forcaTextoClass">{{ forcaTexto }}</small>
+                            </div>
+
+                            <!-- Requisitos -->
+                            <div v-if="form.password" class="requisitos mt-1">
+                                <small :class="req.minimo ? 'text-success' : 'text-muted'">
+                                    <i :class="req.minimo ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                                    Mínimo 8 caracteres
+                                </small><br>
+                                <small :class="req.maiuscula ? 'text-success' : 'text-muted'">
+                                    <i :class="req.maiuscula ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                                    Uma letra maiúscula
+                                </small><br>
+                                <small :class="req.numero ? 'text-success' : 'text-muted'">
+                                    <i :class="req.numero ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                                    Um número
+                                </small><br>
+                                <small :class="req.especial ? 'text-success' : 'text-muted'">
+                                    <i :class="req.especial ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                                    Um caractere especial (!@#$%...)
+                                </small>
+                            </div>
                         </div>
+
+                        <!-- Confirmar Senha -->
                         <div class="col-md-6">
                             <label class="form-label">
                                 Confirmar Senha <span class="text-danger">*</span>
@@ -198,10 +233,41 @@
                             <input
                                 :type="showPassword ? 'text' : 'password'"
                                 class="form-control"
+                                :class="form.passwordConfirm && form.password !== form.passwordConfirm ? 'is-invalid' : ''"
                                 v-model="form.passwordConfirm"
                                 placeholder="Repetir senha"
                                 autocomplete="new-password"
                             />
+                            <div v-if="form.passwordConfirm && form.password !== form.passwordConfirm" class="invalid-feedback">
+                                As senhas não coincidem.
+                            </div>
+                        </div>
+
+                        <!-- Autenticação em dois fatores -->
+                        <div class="col-12">
+                            <div class="two-factor-box" :class="{ 'two-factor-disabled': !emailValido }">
+                                <div class="form-check form-switch mb-1">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="chkTwoFactor"
+                                        v-model="form.twoFactorEnabled"
+                                        :disabled="!emailValido"
+                                    />
+                                    <label class="form-check-label" for="chkTwoFactor">
+                                        <i class="bi-shield-lock me-1"></i>
+                                        Autenticação em dois fatores (2FA por e-mail)
+                                    </label>
+                                </div>
+                                <small>
+                                    <span v-if="!emailValido">
+                                        <i class="bi-info-circle me-1"></i>Informe um e-mail válido para habilitar o 2FA.
+                                    </span>
+                                    <span v-else class="text-muted">
+                                        Quando ativo, um código será enviado ao e-mail do usuário a cada login.
+                                    </span>
+                                </small>
+                            </div>
                         </div>
 
                     </div>
@@ -256,6 +322,27 @@ export default {
         };
     },
     computed: {
+        req() {
+            const s = this.form.password;
+            return {
+                minimo:    s.length >= 8,
+                maiuscula: /[A-Z]/.test(s),
+                numero:    /[0-9]/.test(s),
+                especial:  /[^A-Za-z0-9]/.test(s),
+            };
+        },
+        forca() {
+            return Object.values(this.req).filter(Boolean).length;
+        },
+        forcaTexto() {
+            return ['', 'Fraca', 'Razoável', 'Boa', 'Forte'][this.forca];
+        },
+        forcaTextoClass() {
+            return ['', 'text-danger', 'text-warning', 'text-info', 'text-success'][this.forca];
+        },
+        emailValido() {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email);
+        },
         filteredData() {
             const search = this.search && this.search.toLowerCase();
             if (!search) return this.usuarios;
@@ -289,9 +376,10 @@ export default {
                 dept: '',
                 companyId: null,
                 perfilId: null,
-                isAdmin: false,
-                password: '',
-                passwordConfirm: '',
+                isAdmin:          false,
+                twoFactorEnabled: false,
+                password:         '',
+                passwordConfirm:  '',
             };
         },
 
@@ -344,9 +432,10 @@ export default {
                     dept:            row.dept,
                     companyId:       row.companyId,
                     perfilId:        row.perfilId,
-                    isAdmin:         !!row.isAdmin,
-                    password:        '',
-                    passwordConfirm: '',
+                    isAdmin:          !!row.isAdmin,
+                    twoFactorEnabled: !!row.twoFactorEnabled,
+                    password:         '',
+                    passwordConfirm:  '',
                 };
             } else {
                 this.form = this.emptyForm();
@@ -376,6 +465,16 @@ export default {
                 this.showAlert('error');
                 return;
             }
+            if (!this.emailValido) {
+                this.alertMessage = 'Informe um e-mail válido.';
+                this.showAlert('error');
+                return;
+            }
+            if (this.form.twoFactorEnabled && !this.emailValido) {
+                this.alertMessage = 'Informe um e-mail válido para ativar o 2FA.';
+                this.showAlert('error');
+                return;
+            }
             if (!this.form.companyId) {
                 this.alertMessage = 'Selecione um cliente.';
                 this.showAlert('error');
@@ -391,10 +490,17 @@ export default {
                 this.showAlert('error');
                 return;
             }
-            if (this.form.password && this.form.password !== this.form.passwordConfirm) {
-                this.alertMessage = 'As senhas não coincidem.';
-                this.showAlert('error');
-                return;
+            if (this.form.password) {
+                if (this.forca < 4) {
+                    this.alertMessage = 'A senha não atende todos os requisitos de segurança.';
+                    this.showAlert('error');
+                    return;
+                }
+                if (this.form.password !== this.form.passwordConfirm) {
+                    this.alertMessage = 'As senhas não coincidem.';
+                    this.showAlert('error');
+                    return;
+                }
             }
 
             this.showPreLoader();
@@ -413,12 +519,17 @@ export default {
                         this.closeModal();
                         this.getUsuarios();
                     } else {
-                        this.alertMessage = 'Erro ao salvar usuário.';
+                        this.alertMessage = response.data.message || 'Erro ao salvar usuário.';
                         this.showAlert('error');
                     }
                 })
                 .catch((error) => console.error(error))
                 .finally(() => this.hidePreLoader());
+        },
+
+        forcaClass(i) {
+            if (i > this.forca) return 'barra-vazia';
+            return ['', 'barra-fraca', 'barra-razoavel', 'barra-boa', 'barra-forte'][this.forca];
         },
 
         confirmDelete(row) {
@@ -482,4 +593,33 @@ export default {
     padding: 10px;
 }
 
+.forca-barra {
+    height: 5px;
+    flex: 1;
+    border-radius: 3px;
+    transition: background 0.3s;
+}
+
+.barra-vazia    { background: #dee2e6; }
+.barra-fraca    { background: #dc3545; }
+.barra-razoavel { background: #ffc107; }
+.barra-boa      { background: #0dcaf0; }
+.barra-forte    { background: #198754; }
+
+.requisitos { line-height: 1.8; }
+
+.two-factor-box {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px 14px;
+    transition: opacity 0.2s;
+}
+
+.two-factor-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    background: #f1f3f5;
+    border-color: #dee2e6;
+}
 </style>

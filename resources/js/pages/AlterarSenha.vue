@@ -1,6 +1,13 @@
 <template>
     <div class="d-flex justify-content-center">
         <div class="card alterar-senha-card">
+
+            <!-- Banner de reset obrigatório -->
+            <div v-if="resetObrigatorio" class="alert alert-warning rounded-0 mb-0 d-flex align-items-center gap-2">
+                <i class="bi-shield-lock-fill fs-5"></i>
+                <span>Você precisa definir uma nova senha antes de continuar usando o sistema.</span>
+            </div>
+
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi-lock me-2"></i>Alterar Senha</h5>
             </div>
@@ -106,7 +113,7 @@
             </div>
 
             <div class="card-footer d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-outline-dark" @click="limpar()">
+                <button v-if="!resetObrigatorio" type="button" class="btn btn-outline-dark" @click="limpar()">
                     <i class="bi-x-lg me-1"></i>Limpar
                 </button>
                 <button type="button" class="btn btn-primary" @click="salvar()">
@@ -138,6 +145,10 @@ export default {
         };
     },
     computed: {
+        resetObrigatorio() {
+            const user = this.getUser();
+            return user && user.resetRequest;
+        },
         req() {
             const s = this.form.novaSenha;
             return {
@@ -209,7 +220,16 @@ export default {
                     if (this.checkApiResponse(response)) {
                         this.alertMessage = 'Senha alterada com sucesso!';
                         this.showAlert('success');
-                        this.limpar();
+
+                        if (this.resetObrigatorio) {
+                            // Faz logout e força novo login com a nova senha
+                            setTimeout(() => {
+                                this.axios({ method: 'get', url: '/web/logout' })
+                                    .finally(() => { window.location.href = '/'; });
+                            }, 1500);
+                        } else {
+                            this.limpar();
+                        }
                     } else {
                         this.alertMessage = response.data.message || 'Erro ao alterar senha.';
                         this.showAlert('error');
