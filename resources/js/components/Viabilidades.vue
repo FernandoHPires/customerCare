@@ -272,7 +272,7 @@ export default {
                 }
             })
             .catch((error) => {
-                console.error("An error occurred:", error);
+                //
             })
             .finally(() => {
                 this.hidePreLoader()

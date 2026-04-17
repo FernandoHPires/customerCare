@@ -48,7 +48,13 @@
 
                                     <div v-else class="row">
                                         <div class="col-6">
-                                            <button class="btn btn-primary px-4" type="button" @click="login()">Login</button>
+                                            <button class="btn btn-primary px-4" type="button" @click="login()" :disabled="carregando">
+                                                <span v-if="carregando">
+                                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                                    Aguarde...
+                                                </span>
+                                                <span v-else>Login</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </template>
@@ -98,8 +104,12 @@
                                         </button>
                                     </div>
 
-                                    <button class="btn btn-primary w-100" type="button" @click="verifyCode()">
-                                        <i class="bi-check-lg me-1"></i>Verificar
+                                    <button class="btn btn-primary w-100" type="button" @click="verifyCode()" :disabled="carregando">
+                                        <span v-if="carregando">
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                            Aguarde...
+                                        </span>
+                                        <span v-else><i class="bi-check-lg me-1"></i>Verificar</span>
                                     </button>
                                 </template>
 
@@ -128,6 +138,7 @@ export default {
             password:          '',
             confirmandoSessao: false,
             authAlert:         null,
+            carregando:        false,
             // 2FA
             twoFactor:         false,
             maskedEmail:       '',
@@ -145,6 +156,9 @@ export default {
     },
     methods: {
         login(force = false) {
+            if (this.carregando) return
+            this.carregando = true
+
             this.axios({
                 method: 'post',
                 url: 'api/login',
@@ -171,10 +185,12 @@ export default {
                     this.password = ''
                 }
             })
-            .catch(error => {
-                console.log(error)
+            .catch(() => {
                 this.alertMessage = 'Erro ao realizar login.'
                 this.showAlert('error')
+            })
+            .finally(() => {
+                this.carregando = false
             })
         },
 
@@ -184,6 +200,9 @@ export default {
                 this.showAlert('error')
                 return
             }
+
+            if (this.carregando) return
+            this.carregando = true
 
             this.axios({
                 method: 'post',
@@ -200,10 +219,12 @@ export default {
                     this.$nextTick(() => this.$refs.codeInput?.focus())
                 }
             })
-            .catch(error => {
-                console.log(error)
+            .catch(() => {
                 this.alertMessage = 'Erro ao verificar código.'
                 this.showAlert('error')
+            })
+            .finally(() => {
+                this.carregando = false
             })
         },
 

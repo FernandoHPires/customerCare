@@ -71,7 +71,6 @@ export default {
             .then(response => {
                 if (this.checkApiResponse(response)) {
                   
-                    console.log('Portfolio data:', response.data.data);
                 } else {
                     this.alertMessage = 'Error in getting portfolio data!';
                     this.showAlert(response.data.status);

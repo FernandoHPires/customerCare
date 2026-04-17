@@ -238,6 +238,7 @@ export default {
             year: new Date().getFullYear(),
             reloadPage: 0,
             currentPage: '',
+            loggingOut: false,
             collapseMenuRoutes: [
                 '/tracker',
                 '/renewals-tracker',
@@ -345,16 +346,16 @@ export default {
         // ─────────────────────────────────────────────────────────────────────
 
         logout: function () {
+            this.loggingOut = true
             this.axios({
                 method: "get",
                 url: "/web/logout",
             })
-            .then((response) => {
+            .then(() => {
                 window.location.href = "/"
             })
-            .catch((error) => {
-                this.alertMessage = error
-                this.showAlert("error")
+            .catch(() => {
+                window.location.href = "/"
             })
         },
 
@@ -374,8 +375,6 @@ export default {
             ).toggle()
         },
         toPage: function(menu, toggle = false) {
-            console.log('toPage', menu, toggle)
-
             if(menu.path === undefined || menu.path === null) {
                 return
             }
@@ -445,6 +444,7 @@ export default {
         },
 
         getClientes: function () {
+            if (this.loggingOut) return
             this.axios({ method: 'get', url: '/web/clientes' })
                 .then((response) => {
                     if (this.checkApiResponse(response)) {
@@ -455,6 +455,7 @@ export default {
         },
 
         getCurrentUser: function () {
+            if (this.loggingOut) return
             this.axios({
                 method: "get",
                 url: "/web/current-user",
@@ -462,9 +463,6 @@ export default {
             .then((response) => {
                 if (this.checkApiResponse(response)) {
                     this.user = response.data.data
-
-                    console.log('Current User:', this.user)
-
                     this.setUser(this.user)
                     this.selectedCompanyId = this.user.activeCompanyId ?? null
 
@@ -475,25 +473,21 @@ export default {
                     }
                 }
             })
-            .catch((error) => {
-                console.log(error)
-            })
+            .catch(() => {})
         },
 
         getMenu: function () {
+            if (this.loggingOut) return
             this.axios({
                 method: "get",
                 url: "/web/menus",
             })
             .then((response) => {
                 if(this.checkApiResponse(response)) {
-                    this.menus = response.data.data                    
+                    this.menus = response.data.data
                 }
-                console.log(this.menus)
             })
-            .catch((error) => {
-                console.log(error)
-            })
+            .catch(() => {})
         },
 
         checkSession: function () {

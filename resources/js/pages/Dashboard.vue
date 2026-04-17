@@ -44,20 +44,48 @@
 
             <!-- KPI Cards -->
             <div class="kpi-row">
-                <div class="kpi-card">
-                    <div class="kpi-label">Empreendimentos</div>
+                <div
+                    class="kpi-card"
+                    :class="{ 'kpi-card--clickable': isTodasMode }"
+                    @click="isTodasMode && openBreakdown('empreendimentos', null)"
+                >
+                    <div class="kpi-label">
+                        Empreendimentos
+                        <i v-if="isTodasMode" class="bi bi-bar-chart-fill kpi-drill-icon"></i>
+                    </div>
                     <div class="kpi-value">{{ filteredData.length }}</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">VGV Total</div>
+                <div
+                    class="kpi-card"
+                    :class="{ 'kpi-card--clickable': isTodasMode }"
+                    @click="isTodasMode && openBreakdown('vgv', null)"
+                >
+                    <div class="kpi-label">
+                        VGV Total
+                        <i v-if="isTodasMode" class="bi bi-bar-chart-fill kpi-drill-icon"></i>
+                    </div>
                     <div class="kpi-value">{{ formatVGV(totalVGV) }}</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Área Total</div>
+                <div
+                    class="kpi-card"
+                    :class="{ 'kpi-card--clickable': isTodasMode }"
+                    @click="isTodasMode && openBreakdown('area', null)"
+                >
+                    <div class="kpi-label">
+                        Área Total
+                        <i v-if="isTodasMode" class="bi bi-bar-chart-fill kpi-drill-icon"></i>
+                    </div>
                     <div class="kpi-value">{{ formatArea(totalArea) }}</div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Unidades</div>
+                <div
+                    class="kpi-card"
+                    :class="{ 'kpi-card--clickable': isTodasMode }"
+                    @click="isTodasMode && openBreakdown('unidades', null)"
+                >
+                    <div class="kpi-label">
+                        Unidades
+                        <i v-if="isTodasMode" class="bi bi-bar-chart-fill kpi-drill-icon"></i>
+                    </div>
                     <div class="kpi-value">{{ formatNumber(totalUnidades) }}</div>
                 </div>
             </div>
@@ -83,6 +111,47 @@
             </div>
 
         </div>
+
+        <!-- Modal Breakdown por Cliente -->
+        <div v-if="showBreakdown" class="breakdown-overlay" @click.self="showBreakdown = false">
+            <div class="breakdown-modal">
+                <div class="breakdown-header">
+                    <div class="breakdown-header-content">
+                        <div class="breakdown-title">{{ breakdownLabel }} por Cliente</div>
+                        <div v-if="breakdownFilter" class="breakdown-subtitle">{{ breakdownFilter.value }}</div>
+                    </div>
+                    <button class="breakdown-close" @click="showBreakdown = false">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="breakdown-body">
+                    <table class="breakdown-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th class="text-end">{{ breakdownLabel }}</th>
+                                <th v-if="showPct" class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="row in breakdownRows" :key="row.clienteId">
+                                <td>{{ row.clienteNome }}</td>
+                                <td class="text-end">{{ row.formattedValue }}</td>
+                                <td v-if="showPct" class="text-end">{{ row.pct }}%</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td><strong>Total {{ breakdownFilter ? breakdownFilter.value : '' }}</strong></td>
+                                <td class="text-end"><strong>{{ breakdownTotal }}</strong></td>
+                                <td v-if="showPct" class="text-end"><strong>{{ breakdownTotalPct }}%</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -130,6 +199,9 @@ export default {
             projects: [],
             selectedUFs: [],
             selectedFases: [],
+            showBreakdown: false,
+            breakdownType: null,   // 'empreendimentos' | 'vgv' | 'area' | 'unidades'
+            breakdownFilter: null, // { dim: 'uf'|'ano'|'fase', value: '...' } ou null
         }
     },
     computed: {
@@ -156,8 +228,90 @@ export default {
             return this.filteredData.reduce((s, p) => s + (p.totalUnidades || 0), 0)
         },
 
-        // Chart 1: VGV por Região (Pie)
+        isTodasMode() {
+            return this.projects.length > 0 && this.projects[0].isTodas === true
+        },
+
+        // --- Breakdown ---
+        breakdownLabel() {
+            const map = {
+                empreendimentos: 'Empreendimentos',
+                vgv: 'VGV Total',
+                area: 'Área Total',
+                unidades: 'Unidades',
+            }
+            return map[this.breakdownType] || ''
+        },
+
+        // Mostra % apenas nos gráficos de pizza (dim === 'uf')
+        showPct() {
+            return this.breakdownFilter?.dim === 'uf'
+        },
+
+        breakdownRows() {
+            if (!this.breakdownType) return []
+
+            // Total geral (todos os dados filtrados) — base para o %
+            const grandTotal = this.filteredData.reduce((s, p) => {
+                if (this.breakdownType === 'empreendimentos') return s + 1
+                if (this.breakdownType === 'vgv')             return s + (p.vgv || 0)
+                if (this.breakdownType === 'area')            return s + (p.areaTotalM2 || 0)
+                if (this.breakdownType === 'unidades')        return s + (p.totalUnidades || 0)
+                return s
+            }, 0)
+
+            // Dados filtrados pelo segmento clicado
+            let data = this.filteredData
+            if (this.breakdownFilter) {
+                const { dim, value } = this.breakdownFilter
+                if (dim === 'uf')   data = data.filter(p => p.uf === value)
+                if (dim === 'ano')  data = data.filter(p => p.anoLancamento === value)
+                if (dim === 'fase') data = data.filter(p => (p.faseAtual || 'Não informado') === value)
+            }
+
+            const grouped = {}
+            data.forEach(p => {
+                const id = p.clienteId
+                if (!grouped[id]) {
+                    grouped[id] = { clienteId: id, clienteNome: p.clienteNome || `Cliente ${id}`, value: 0 }
+                }
+                if (this.breakdownType === 'empreendimentos') grouped[id].value += 1
+                else if (this.breakdownType === 'vgv')        grouped[id].value += (p.vgv || 0)
+                else if (this.breakdownType === 'area')       grouped[id].value += (p.areaTotalM2 || 0)
+                else if (this.breakdownType === 'unidades')   grouped[id].value += (p.totalUnidades || 0)
+            })
+
+            const rows = Object.values(grouped).sort((a, b) => b.value - a.value)
+
+            return rows.map(r => ({
+                ...r,
+                formattedValue: this.formatBreakdownValue(r.value),
+                // % de cada cliente em relação ao total geral (não só do segmento)
+                pct: grandTotal > 0 ? ((r.value / grandTotal) * 100).toFixed(1) : '0.0',
+            }))
+        },
+
+        breakdownTotal() {
+            const segmentTotal = this.breakdownRows.reduce((s, r) => s + r.value, 0)
+            return this.formatBreakdownValue(segmentTotal)
+        },
+
+        // % do segmento inteiro no total geral (ex: PR = 38.5%)
+        breakdownTotalPct() {
+            const grandTotal = this.filteredData.reduce((s, p) => {
+                if (this.breakdownType === 'empreendimentos') return s + 1
+                if (this.breakdownType === 'vgv')             return s + (p.vgv || 0)
+                if (this.breakdownType === 'area')            return s + (p.areaTotalM2 || 0)
+                if (this.breakdownType === 'unidades')        return s + (p.totalUnidades || 0)
+                return s
+            }, 0)
+            const segmentTotal = this.breakdownRows.reduce((s, r) => s + r.value, 0)
+            return grandTotal > 0 ? ((segmentTotal / grandTotal) * 100).toFixed(1) : '0.0'
+        },
+
+        // Chart 1: VGV por Região (Pie) — clicável em modo Todas
         vgvPorRegiaoChart() {
+            const vm = this
             const grouped = {}
             this.filteredData.forEach(p => {
                 if (!p.uf) return
@@ -178,11 +332,21 @@ export default {
                         const fmt = v >= 1e9
                             ? `R$ ${(v / 1e9).toFixed(2).replace('.', ',')} Bi`
                             : `R$ ${(v / 1e6).toFixed(1).replace('.', ',')} Mi`
-                        return `<b>${this.point.name}</b><br/>${fmt} (${this.percentage.toFixed(1)}%)`
+                        const hint = vm.isTodasMode ? '<br/><small>Clique para detalhar por cliente</small>' : ''
+                        return `<b>${this.point.name}</b><br/>${fmt} (${this.percentage.toFixed(1)}%)${hint}`
                     },
                 },
                 plotOptions: {
                     pie: {
+                        cursor: vm.isTodasMode ? 'pointer' : 'default',
+                        point: {
+                            events: {
+                                click: function () {
+                                    if (!vm.isTodasMode) return
+                                    vm.openBreakdown('vgv', { dim: 'uf', value: this.name })
+                                },
+                            },
+                        },
                         dataLabels: {
                             enabled: true,
                             format: '<b>{point.name}</b>: {point.percentage:.1f}%',
@@ -194,8 +358,9 @@ export default {
             }
         },
 
-        // Chart 2: VGV por Ano de Lançamento (Column)
+        // Chart 2: VGV por Ano de Lançamento (Column) — clicável em modo Todas
         vgvPorAnoChart() {
+            const vm = this
             const grouped = {}
             this.filteredData.forEach(p => {
                 if (!p.anoLancamento) return
@@ -233,11 +398,21 @@ export default {
                         const fmt = v >= 1e9
                             ? `R$ ${(v / 1e9).toFixed(2).replace('.', ',')} Bi`
                             : `R$ ${(v / 1e6).toFixed(1).replace('.', ',')} Mi`
-                        return `<b>${this.x}</b><br/>${fmt}`
+                        const hint = vm.isTodasMode ? '<br/><small>Clique para detalhar por cliente</small>' : ''
+                        return `<b>${this.x}</b><br/>${fmt}${hint}`
                     },
                 },
                 plotOptions: {
                     column: {
+                        cursor: vm.isTodasMode ? 'pointer' : 'default',
+                        point: {
+                            events: {
+                                click: function () {
+                                    if (!vm.isTodasMode) return
+                                    vm.openBreakdown('vgv', { dim: 'ano', value: this.category })
+                                },
+                            },
+                        },
                         dataLabels: {
                             enabled: true,
                             formatter() {
@@ -253,8 +428,9 @@ export default {
             }
         },
 
-        // Chart 3: Unidades por Região (Pie)
+        // Chart 3: Unidades por Região (Pie) — clicável em modo Todas
         unidadesPorRegiaoChart() {
+            const vm = this
             const grouped = {}
             this.filteredData.forEach(p => {
                 if (!p.uf) return
@@ -271,11 +447,21 @@ export default {
                 tooltip: {
                     ...baseChartOptions.tooltip,
                     formatter() {
-                        return `<b>${this.point.name}</b><br/>${this.y.toLocaleString('pt-BR')} unidades (${this.percentage.toFixed(1)}%)`
+                        const hint = vm.isTodasMode ? '<br/><small>Clique para detalhar por cliente</small>' : ''
+                        return `<b>${this.point.name}</b><br/>${this.y.toLocaleString('pt-BR')} unidades (${this.percentage.toFixed(1)}%)${hint}`
                     },
                 },
                 plotOptions: {
                     pie: {
+                        cursor: vm.isTodasMode ? 'pointer' : 'default',
+                        point: {
+                            events: {
+                                click: function () {
+                                    if (!vm.isTodasMode) return
+                                    vm.openBreakdown('unidades', { dim: 'uf', value: this.name })
+                                },
+                            },
+                        },
                         dataLabels: {
                             enabled: true,
                             format: '<b>{point.name}</b>: {point.percentage:.1f}%',
@@ -287,8 +473,9 @@ export default {
             }
         },
 
-        // Chart 4: Empreendimentos por Etapa (Horizontal Bar)
+        // Chart 4: Empreendimentos por Etapa (Horizontal Bar) — clicável em modo Todas
         empreendimentosPorFaseChart() {
+            const vm = this
             const grouped = {}
             this.filteredData.forEach(p => {
                 const fase = p.faseAtual || 'Não informado'
@@ -315,11 +502,21 @@ export default {
                 tooltip: {
                     ...baseChartOptions.tooltip,
                     formatter() {
-                        return `<b>${this.x}</b><br/>${this.y} empreendimento${this.y !== 1 ? 's' : ''}`
+                        const hint = vm.isTodasMode ? '<br/><small>Clique para detalhar por cliente</small>' : ''
+                        return `<b>${this.x}</b><br/>${this.y} empreendimento${this.y !== 1 ? 's' : ''}${hint}`
                     },
                 },
                 plotOptions: {
                     bar: {
+                        cursor: vm.isTodasMode ? 'pointer' : 'default',
+                        point: {
+                            events: {
+                                click: function () {
+                                    if (!vm.isTodasMode) return
+                                    vm.openBreakdown('empreendimentos', { dim: 'fase', value: this.category })
+                                },
+                            },
+                        },
                         dataLabels: {
                             enabled: true,
                             style: { color: '#FFFFFF', textOutline: 'none', fontSize: '11px' },
@@ -357,6 +554,19 @@ export default {
                 })
                 .catch(() => {})
                 .finally(() => this.hidePreLoader())
+        },
+        openBreakdown(type, filter) {
+            this.breakdownType   = type
+            this.breakdownFilter = filter
+            this.showBreakdown   = true
+        },
+        formatBreakdownValue(value) {
+            if (this.breakdownType === 'empreendimentos' || this.breakdownType === 'unidades') {
+                return value.toLocaleString('pt-BR')
+            }
+            if (this.breakdownType === 'vgv') return this.formatVGV(value)
+            if (this.breakdownType === 'area') return this.formatArea(value)
+            return value
         },
         formatVGV(value) {
             if (!value) return 'R$ 0'
@@ -485,6 +695,14 @@ export default {
     padding: 12px 16px;
     text-align: center;
 }
+.kpi-card--clickable {
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.kpi-card--clickable:hover {
+    background: #2A6A88;
+    transform: translateY(-2px);
+}
 .kpi-label {
     font-size: 11px;
     color: #CCECF5;
@@ -492,6 +710,14 @@ export default {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+.kpi-drill-icon {
+    font-size: 10px;
+    opacity: 0.7;
 }
 .kpi-value {
     font-size: 24px;
@@ -514,4 +740,92 @@ export default {
 .chart-card :deep(.highcharts-container) {
     width: 100% !important;
 }
+
+/* ---- Breakdown Modal ---- */
+.breakdown-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.breakdown-modal {
+    background: #0E3E52;
+    border: 1px solid #3A7A95;
+    border-radius: 10px;
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.breakdown-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid #3A7A95;
+}
+.breakdown-header-content {
+    flex: 1;
+    text-align: center;
+}
+.breakdown-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #F0F9F8;
+}
+.breakdown-subtitle {
+    font-size: 22px;
+    font-weight: bold;
+    color: #FFFFFF;
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+.breakdown-close {
+    background: transparent;
+    border: none;
+    color: #CCECF5;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.breakdown-close:hover { color: #fff; }
+.breakdown-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+}
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: #F0F9F8;
+}
+.breakdown-table th {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #CCECF5;
+    padding: 6px 8px;
+    border-bottom: 1px solid #3A7A95;
+}
+.breakdown-table td {
+    padding: 8px 8px;
+    border-bottom: 1px solid #1E6A85;
+}
+.breakdown-table tbody tr:hover td {
+    background: #20556E;
+}
+.breakdown-table tfoot td {
+    border-top: 1px solid #4AACC5;
+    border-bottom: none;
+    padding-top: 10px;
+    color: #F0F9F8;
+}
+.text-end { text-align: right; }
 </style>

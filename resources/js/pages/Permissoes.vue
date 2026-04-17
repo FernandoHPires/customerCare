@@ -191,7 +191,7 @@ export default {
                         this.showAlert('error');
                     }
                 })
-                .catch((error) => console.error(error))
+                .catch(() => {})
                 .finally(() => this.hidePreLoader());
         },
 
@@ -207,7 +207,7 @@ export default {
                         this.modulosMenu = response.data.data;
                     }
                 })
-                .catch((error) => console.error(error))
+                .catch(() => {})
                 .finally(() => { this.loadingMenus = false; });
         },
 
@@ -245,7 +245,7 @@ export default {
                         this.showAlert('error');
                     }
                 })
-                .catch((error) => console.error(error))
+                .catch(() => {})
                 .finally(() => this.hidePreLoader());
         },
     },

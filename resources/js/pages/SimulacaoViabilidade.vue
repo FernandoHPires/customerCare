@@ -178,7 +178,7 @@ export default {
                     }
                 })
                 .catch((error) => {
-                    console.error('Erro ao carregar simulação:', error);
+                    
                 })
                 .finally(() => {
                     this.hidePreLoader();
@@ -191,7 +191,7 @@ export default {
                 this.axios({ method: 'post', url: '/web/simulacao', data: this.form })
                     .then(() => {})
                     .catch((error) => {
-                        console.error('Erro ao salvar simulação:', error);
+                        
                     })
                     .finally(() => {});
             }, 400);

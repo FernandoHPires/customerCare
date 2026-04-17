@@ -241,7 +241,7 @@ export default {
                         this.showAlert('error');
                     }
                 })
-                .catch((error) => console.error(error))
+                .catch(() => {})
                 .finally(() => this.hidePreLoader());
         },
 
@@ -288,7 +288,7 @@ export default {
                         this.showAlert('error');
                     }
                 })
-                .catch((error) => console.error(error))
+                .catch(() => {})
                 .finally(() => this.hidePreLoader());
         },
 
@@ -317,7 +317,7 @@ export default {
                             this.showAlert('error');
                         }
                     })
-                    .catch((error) => console.error(error))
+                    .catch(() => {})
                     .finally(() => this.hidePreLoader());
             }
         },

@@ -394,7 +394,7 @@ export default {
                         this.showAlert('error');
                     }
                 })
-                .catch((error) => console.error(error))
+                .catch(() => {})
                 .finally(() => this.hidePreLoader());
         },
 
@@ -405,7 +405,7 @@ export default {
                         this.clientes = response.data.data;
                     }
                 })
-                .catch((error) => console.error(error));
+                .catch(() => {});
         },
 
         getPerfis() {
@@ -415,7 +415,7 @@ export default {
                         this.perfis = response.data.data;
                     }
                 })
-                .catch((error) => console.error(error));
+                .catch(() => {});
         },
 
         openModal(action, row) {
@@ -523,7 +523,7 @@ export default {
                         this.showAlert('error');
                     }
                 })
-                .catch((error) => console.error(error))
+                .catch(() => {})
                 .finally(() => this.hidePreLoader());
         },
 
@@ -557,7 +557,7 @@ export default {
                             this.showAlert('error');
                         }
                     })
-                    .catch((error) => console.error(error))
+                    .catch(() => {})
                     .finally(() => this.hidePreLoader());
             }
         },

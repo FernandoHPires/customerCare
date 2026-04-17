@@ -34,6 +34,7 @@
                 <thead>
                     <tr>
                         <th class="col-wide">Empreendimento</th>
+                        <th v-if="isTodasMode">Cliente</th>
                         <th>Cidade</th>
                         <th class="col-small">UF</th>
                         <th>Tipo<br>Produto</th>
@@ -98,13 +99,14 @@
 
                 <tbody v-if="filteredData.length == 0">
                     <tr>
-                        <td colspan="44">Nenhum empreendimento encontrado</td>
+                        <td :colspan="isTodasMode ? 45 : 44">Nenhum empreendimento encontrado</td>
                     </tr>
                 </tbody>
 
                 <tbody v-else>
                     <tr v-for="row in filteredData" :key="row.id">
                         <td>{{ row.nome }}</td>
+                        <td v-if="isTodasMode">{{ row.clienteNome }}</td>
                         <td>{{ row.cidade }}</td>
                         <td>{{ row.uf }}</td>
                         <td>{{ row.tipoProduto }}</td>
@@ -214,6 +216,9 @@ export default {
         };
     },
     computed: {
+        isTodasMode() {
+            return this.portifolios.length > 0 && this.portifolios[0].isTodas === true
+        },
         filteredData() {
             var search = this.search && this.search.toLowerCase();
             var data = this.portifolios;
@@ -246,7 +251,7 @@ export default {
                 }
             })
             .catch((error) => {
-                console.error("An error occurred:", error);
+                //
             })
             .finally(() => {
                 this.hidePreLoader()

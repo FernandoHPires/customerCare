@@ -66,7 +66,11 @@ class PortifolioBO {
 
         // Todas as empresas (active_company_id = 0, somente uni users)
         if ($isUniUser && $activeCompanyId === 0) {
-            $empreendimentos = Empreendimentos::query()->get();
+            $empreendimentos = Empreendimentos::query()
+                ->join('clientes', 'clientes.id', '=', 'empreendimentos.cliente_id')
+                ->orderBy('clientes.nome')
+                ->select('empreendimentos.*', 'clientes.nome as cliente_nome')
+                ->get();
         } else {
             $companyId = ($isUniUser && $activeCompanyId)
                 ? $activeCompanyId
@@ -80,7 +84,8 @@ class PortifolioBO {
                 ->get();
         }
 
-        $result = [];
+        $isTodas = $isUniUser && $activeCompanyId !== null && (int)$activeCompanyId === 0;
+        $result  = [];
 
         foreach ($empreendimentos as $emp) {
 
@@ -95,6 +100,9 @@ class PortifolioBO {
 
             $result[] = [
                 'empreendimentoId' => $emp->id,
+                'clienteId'        => $emp->cliente_id,
+                'clienteNome'      => $emp->cliente_nome ?? null,
+                'isTodas'          => $isTodas,
                 'nome'             => $emp->nome,
                 'uf'               => $emp->uf,
                 'faseAtual'        => $emp->fase_atual,
@@ -127,7 +135,12 @@ class PortifolioBO {
 
             // Todas as empresas (active_company_id = 0, somente uni users)
             if ($isUniUser && $activeCompanyId === 0) {
-                $empreendimentos = Empreendimentos::query()->get();
+                $empreendimentos = Empreendimentos::query()
+                    ->join('clientes', 'clientes.id', '=', 'empreendimentos.cliente_id')
+                    ->orderBy('empreendimentos.cliente_id')
+                    ->orderBy('empreendimentos.id')
+                    ->select('empreendimentos.*', 'clientes.nome as cliente_nome')
+                    ->get();
             } else {
                 $companyId = ($isUniUser && $activeCompanyId)
                     ? $activeCompanyId
@@ -141,6 +154,8 @@ class PortifolioBO {
                     ->get();
             }
 
+            $isTodas = $isUniUser && $activeCompanyId !== null && (int)$activeCompanyId === 0;
+
             foreach ($empreendimentos as $empreendimento) {
 
                     $viabilidade = Viabilidades::query()
@@ -152,6 +167,8 @@ class PortifolioBO {
                         'empreendimentoId'           => $empreendimento->id,
                         'viabilidadeId'              => $viabilidade?->id,
                         'clienteId'                  => $empreendimento->cliente_id,
+                        'clienteNome'                => $empreendimento->cliente_nome ?? null,
+                        'isTodas'                    => $isTodas,
                         'nome'                       => $empreendimento->nome,
                         'cidade'                     => $empreendimento->cidade,
                         'uf'                         => $empreendimento->uf,

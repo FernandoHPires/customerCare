@@ -130,9 +130,7 @@ export default {
                             this.showAlert(response.data.status)
                         }
                     })
-                    .catch(error => {
-                        console.log(error)
-                    })
+                    .catch(() => {})
                     .finally(() => {
                         this.hidePreLoader()
                     })
@@ -204,7 +202,6 @@ export default {
                 url: 'api/users'
             })
             .then(response => {
-                console.log("response users", response)
                 if(this.checkApiResponse(response)) {
                     this.users = response.data.users
                 } else {

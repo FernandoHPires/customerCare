@@ -78,7 +78,7 @@ export default {
                     }
                 })
                 .catch((error) => {
-                    console.error("Error loading user:", error);
+                    
                 });
         },
     },
