@@ -22,5 +22,11 @@
 
         <!-- Scripts -->
         <script src="{{ asset('js/app.js?') }}{{ uniqid() }}"></script>
+
+        @if(session('invite_error'))
+        <script>
+            sessionStorage.setItem('auth_alert', '{{ session('invite_error') }}');
+        </script>
+        @endif
     </body>
 </html>

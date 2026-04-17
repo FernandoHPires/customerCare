@@ -295,6 +295,31 @@
         @return="dialogOnReturn"
     />
 
+    <!-- Modal de Convite -->
+    <div v-if="showConviteModal" class="modal-overlay-convite" @click.self="showConviteModal = false">
+        <div class="convite-modal">
+            <div class="convite-icon">
+                <i class="bi bi-envelope-paper"></i>
+            </div>
+            <h5 class="convite-titulo">Enviar acesso por e-mail?</h5>
+            <p class="convite-texto">
+                Deseja enviar um e-mail para <strong>{{ conviteNome }}</strong>
+                com o link de acesso ao sistema?
+            </p>
+            <div class="convite-acoes">
+                <button class="btn btn-outline-secondary" @click="showConviteModal = false" :disabled="enviandoConvite">
+                    Agora não
+                </button>
+                <button class="btn btn-primary" @click="enviarConvite()" :disabled="enviandoConvite">
+                    <span v-if="enviandoConvite">
+                        <span class="spinner-border spinner-border-sm me-1"></span>Enviando...
+                    </span>
+                    <span v-else><i class="bi bi-send me-1"></i>Enviar e-mail</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </template>
 
 <script>
@@ -319,6 +344,11 @@ export default {
             event: '',
             dialogMessage: '',
             dialogType: '',
+            // Convite
+            showConviteModal: false,
+            conviteUserId: null,
+            conviteNome: '',
+            enviandoConvite: false,
         };
     },
     computed: {
@@ -508,23 +538,68 @@ export default {
             const payload = { ...this.form, action: this.modalAction };
             delete payload.passwordConfirm;
 
+            const senhaAlterada  = !!this.form.password;
+            const emailUsuario   = this.form.email;
+            const nomeUsuario    = (this.form.firstName + ' ' + this.form.lastName).trim();
+            const acaoModal      = this.modalAction;
+
+            let conviteData = null;
+
             this.axios({ method: 'post', url: '/web/usuario', data: payload })
                 .then((response) => {
                     if (this.checkApiResponse(response)) {
                         this.alertMessage =
-                            this.modalAction === 'Adicionar'
+                            acaoModal === 'Adicionar'
                                 ? 'Usuário cadastrado com sucesso!'
                                 : 'Usuário atualizado com sucesso!';
                         this.showAlert('success');
                         this.closeModal();
                         this.getUsuarios();
+
+                        // Guarda os dados para abrir o modal de convite no finally (após preloader sumir)
+                        if (acaoModal === 'Adicionar' || (senhaAlterada && emailUsuario)) {
+                            conviteData = {
+                                userId : response.data.data?.userId,
+                                nome   : nomeUsuario,
+                            };
+                        }
                     } else {
                         this.alertMessage = response.data.message || 'Erro ao salvar usuário.';
                         this.showAlert('error');
                     }
                 })
                 .catch(() => {})
-                .finally(() => this.hidePreLoader());
+                .finally(() => {
+                    this.hidePreLoader();
+                    // Abre o modal de convite somente depois que o preloader foi removido
+                    if (conviteData) {
+                        this.conviteUserId    = conviteData.userId;
+                        this.conviteNome      = conviteData.nome;
+                        this.showConviteModal = true;
+                    }
+                });
+        },
+
+        enviarConvite() {
+            this.enviandoConvite = true
+            this.axios({ method: 'post', url: '/web/usuario/' + this.conviteUserId + '/enviar-convite' })
+                .then((response) => {
+                    if (this.checkApiResponse(response)) {
+                        this.alertMessage = 'E-mail de acesso enviado com sucesso!'
+                        this.showAlert('success')
+                    } else {
+                        this.alertMessage = response.data.message || 'Erro ao enviar e-mail.'
+                        this.showAlert('error')
+                    }
+                })
+                .catch(() => {
+                    this.alertMessage = 'Erro ao enviar e-mail.'
+                    this.showAlert('error')
+                })
+                .finally(() => {
+                    this.enviandoConvite = false
+                    this.showConviteModal = false
+                })
         },
 
         forcaClass(i) {
@@ -566,6 +641,48 @@ export default {
 </script>
 
 <style scoped>
+/* ---- Modal Convite ---- */
+.modal-overlay-convite {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.convite-modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 36px 32px;
+    width: 420px;
+    max-width: 90vw;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.convite-icon {
+    font-size: 48px;
+    color: #124C60;
+    margin-bottom: 12px;
+}
+.convite-titulo {
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #1a1a2e;
+}
+.convite-texto {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+.convite-acoes {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
 .modal-body .form-label {
     margin-bottom: 2px;
     font-size: 0.875rem;

@@ -13,6 +13,7 @@ use App\Http\Controllers\AlterarSenhaController;
 use App\Http\Controllers\PermissaoController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\ClientViewController;
+use App\Http\Controllers\InviteController;
 
 
 
@@ -28,6 +29,9 @@ Route::group(['middleware' => 'noAuthentication'], function () {
     // 2FA (parte do fluxo de login — sem autenticação completa ainda)
     Route::post('api/two-factor/verify', [TwoFactorController::class, 'verify']);
     Route::post('api/two-factor/resend', [TwoFactorController::class, 'resend']);
+
+    // Convite — link enviado por e-mail (acesso sem autenticação prévia)
+    Route::get('convite/{token}', [InviteController::class, 'accept']);
 
 });
 
@@ -78,6 +82,8 @@ Route::group(['middleware' => 'webAuthentication'], function () {
     Route::get('/web/clientes', [ClienteController::class, 'getClientes']);
     Route::post('/web/cliente', [ClienteController::class, 'saveCliente']);
     Route::delete('/web/cliente/{id}', [ClienteController::class, 'deleteCliente']);
+
+    Route::post('/web/usuario/{userId}/enviar-convite', [InviteController::class, 'send']);
 
     
 
