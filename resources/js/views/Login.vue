@@ -46,15 +46,26 @@
                                         </div>
                                     </div>
 
-                                    <div v-else class="row">
-                                        <div class="col-6">
-                                            <button class="btn btn-primary px-4" type="button" @click="login()" :disabled="carregando">
-                                                <span v-if="carregando">
-                                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                                    Aguarde...
-                                                </span>
-                                                <span v-else>Login</span>
-                                            </button>
+                                    <div v-else>
+                                        <!-- Widget Cloudflare Turnstile -->
+                                        <div
+                                            id="turnstile-widget"
+                                            class="cf-turnstile mb-3"
+                                            data-sitekey="0x4AAAAAADAvFbWGKkvtT5FJ"
+                                            data-callback="onTurnstileSuccess"
+                                            data-expired-callback="onTurnstileExpired"
+                                        ></div>
+
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <button class="btn btn-primary px-4" type="button" @click="login()" :disabled="carregando || !turnstileToken">
+                                                    <span v-if="carregando">
+                                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                                        Aguarde...
+                                                    </span>
+                                                    <span v-else>Login</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </template>
@@ -139,6 +150,8 @@ export default {
             confirmandoSessao: false,
             authAlert:         null,
             carregando:        false,
+            // Cloudflare Turnstile — token preenchido pelo callback do widget
+            turnstileToken:    '',
             // 2FA
             twoFactor:         false,
             maskedEmail:       '',
@@ -153,6 +166,14 @@ export default {
             this.authAlert = msg
             sessionStorage.removeItem('auth_alert')
         }
+
+        // Expõe os callbacks do Turnstile no escopo global para o widget os encontrar
+        window.onTurnstileSuccess = (token) => {
+            this.turnstileToken = token
+        }
+        window.onTurnstileExpired = () => {
+            this.turnstileToken = ''
+        }
     },
     methods: {
         login(force = false) {
@@ -162,7 +183,12 @@ export default {
             this.axios({
                 method: 'post',
                 url: 'api/login',
-                data: { username: this.username, password: this.password, force },
+                data: {
+                    username:         this.username,
+                    password:         this.password,
+                    force,
+                    turnstileToken:   this.turnstileToken,
+                },
             })
             .then(response => {
                 if (this.checkApiResponse(response)) {
@@ -183,11 +209,13 @@ export default {
                     this.alertMessage = response.data.message
                     this.showAlert('error')
                     this.password = ''
+                    this.resetarTurnstile()
                 }
             })
             .catch(() => {
                 this.alertMessage = 'Erro ao realizar login.'
                 this.showAlert('error')
+                this.resetarTurnstile()
             })
             .finally(() => {
                 this.carregando = false
@@ -268,6 +296,15 @@ export default {
         cancelarConfirmacao() {
             this.confirmandoSessao = false
             this.password          = ''
+        },
+
+        // Reseta o widget do Turnstile após falha de login
+        // (o token é de uso único — precisa ser renovado a cada tentativa)
+        resetarTurnstile() {
+            this.turnstileToken = ''
+            if (window.turnstile) {
+                window.turnstile.reset('#turnstile-widget')
+            }
         },
     }
 }

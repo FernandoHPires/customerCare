@@ -15,6 +15,9 @@
 
         <!-- Styles -->
         <link href="{{ asset('css/app.css?') }}{{ uniqid() }}" rel="stylesheet">
+
+        <!-- Cloudflare Turnstile -->
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     </head>
 
     <body>

@@ -18,15 +18,48 @@ class LoginController extends Controller {
     public function login(Request $request) {
 
         $request->validate([
-            //'email' => 'required|email:rfc,dns',
             'username' => 'required|max:255',
             'password' => 'required|max:255',
         ]);
 
-        $loginBO = new LoginBO($this->logger);
+        // ── Valida o token do Cloudflare Turnstile ────────────────────────
+        $turnstileValido = $this->validarTurnstile(
+            $request->input('turnstileToken', ''),
+            $request->ip()
+        );
+
+        if (!$turnstileValido) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Verificação de segurança falhou. Tente novamente.',
+            ], 200);
+        }
+
+        $loginBO  = new LoginBO($this->logger);
         $response = $loginBO->login($request->username, $request->password, $request, $request->boolean('force', false));
 
         return response()->json($response, 200);
+    }
+
+    // ── Verifica o token Turnstile na API do Cloudflare ───────────────────
+    private function validarTurnstile(string $token, string $ip): bool {
+
+        if (empty($token)) {
+            return false;
+        }
+
+        $secretKey = env('TURNSTILE_SECRET_KEY');
+
+        $resposta = \Illuminate\Support\Facades\Http::asForm()->post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            [
+                'secret'   => $secretKey,
+                'response' => $token,
+                'remoteip' => $ip,
+            ]
+        );
+
+        return $resposta->json('success') === true;
     }
 
     public function federationLogin(Request $request, $token) {
