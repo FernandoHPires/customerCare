@@ -186,154 +186,253 @@
 
                         <!-- Formulário inline -->
                         <div v-if="showViabilidadeForm" class="viabilidade-form">
-                            <div class="d-flex align-items-center mb-3">
-                                <h6 class="mb-0">{{ viabilidadeAction }} Viabilidade</h6>
-                            </div>
 
-                            <div class="row mb-2">
-                                <div class="form-group col-3">
-                                    <label class="table-header">Unidades Venda</label>
-                                    <input type="number" class="form-control" v-model="vForm.unidadesVenda" />
+                            <!-- ─── Dados do Empreendimento ──────────────── -->
+                            <p class="vf-secao-titulo">Dados do Empreendimento</p>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-2">
+                                    <label class="table-header">Nº de unidades - Estoque</label>
+                                    <input type="number" class="form-control form-control-sm" v-model.number="vForm.unidadesVenda" />
                                 </div>
-                                <div class="form-group col-3">
-                                    <label class="table-header">Área Total m²</label>
+                                <div class="col-md-2">
+                                    <label class="table-header">Área total m²</label>
                                     <CurrencyInput v-model="vForm.areaTotalM2" />
                                 </div>
-                                <div class="form-group col-3">
-                                    <label class="table-header">Valor Previsto m²</label>
+                                <div class="col-md-2">
+                                    <label class="table-header">Valor m²</label>
                                     <CurrencyInput v-model="vForm.valorPrevisto" />
                                 </div>
-                                <div class="form-group col-3">
-                                    <label class="table-header">Aquisição Terreno R$</label>
-                                    <CurrencyInput v-model="vForm.valorAquisicaoTerreno" />
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-3">
-                                    <label class="table-header">Aquisição Terreno %</label>
-                                    <CurrencyInput v-model="vForm.percentualAquisicaoTerreno" />
-                                </div>
-                                <div class="form-group col-3">
+                                <div class="col-md-2">
                                     <label class="table-header">% Permuta Física/Financ.</label>
                                     <CurrencyInput v-model="vForm.percentualPermutaFisica" />
                                 </div>
-                                <div class="form-group col-3">
-                                    <label class="table-header">VGV Estimado</label>
-                                    <CurrencyInput v-model="vForm.vgv" />
-                                </div>
-                                <div class="form-group col-3">
-                                    <label class="table-header">Exposição Caixa VP</label>
+                                <div class="col-md-2">
+                                    <label class="table-header">Exposição de Caixa VP</label>
                                     <CurrencyInput v-model="vForm.exposicaoCaixa" />
                                 </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-4">
-                                    <label class="table-header">Resultado Líquido (VPL)</label>
-                                    <CurrencyInput v-model="vForm.resultadoLiquido" />
-                                </div>
-                                <div class="form-group col-4">
+                                <div class="col-md-2">
                                     <label class="table-header">Status</label>
-                                    <select v-model="vForm.status" class="form-select">
+                                    <select v-model="vForm.status" class="form-select form-select-sm">
                                         <option value="A">Ativa</option>
                                         <option value="I">Inativa</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <hr class="my-2"/>
-                            <p class="table-header mb-2">Composição de Custos</p>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
-                                    <label class="table-header">Obra R$</label>
-                                    <CurrencyInput v-model="vForm.valorCustoObra" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Obra %</label>
-                                    <CurrencyInput v-model="vForm.percentualCustoObra" />
-                                </div>
+                            <!-- VGV calculado -->
+                            <div class="vf-vgv-banner mb-3">
+                                <span class="vf-vgv-label">Receita bruta da venda das unidades (VGV)</span>
+                                <span class="vf-vgv-valor">{{ fmtReais(vgvCalculado) }}</span>
+                                <span class="vf-vgv-formula">= Área total m² × Valor m²</span>
                             </div>
 
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
-                                    <label class="table-header">Comissão R$</label>
-                                    <CurrencyInput v-model="vForm.valorComissao" />
+                            <!-- ─── Descritivo Financeiro ─────────────────── -->
+                            <p class="vf-secao-titulo">Descritivo Financeiro</p>
+                            <table class="table table-sm vf-tabela-dre mb-3">
+                                <thead>
+                                    <tr>
+                                        <th>Descritivo Financeiro</th>
+                                        <th class="vf-col-reais text-end">Valor (R$)</th>
+                                        <th class="vf-col-pct text-center">(%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="vf-linha-vgv">
+                                        <td><strong>(+) Receita bruta da venda das unidades (VGV)</strong></td>
+                                        <td class="text-end"><span class="vf-badge vf-badge-vgv">{{ fmtReais(vgvCalculado) }}</span></td>
+                                        <td class="text-center"><span class="vf-badge vf-badge-vgv">100,00%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>(-) Comissões e premiações de venda</td>
+                                        <td class="text-end"><span class="vf-badge">{{ fmtReais(dre.comissoesReais) }}</span></td>
+                                        <td><CurrencyInput v-model="vForm.percentualComissao" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>(-) Tributos sobre a receita de venda</td>
+                                        <td class="text-end"><span class="vf-badge">{{ fmtReais(dre.tributosReais) }}</span></td>
+                                        <td><CurrencyInput v-model="vForm.percentualTributo" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>(-) Incorporação</td>
+                                        <td class="text-end"><span class="vf-badge">{{ fmtReais(dre.incorporacaoReais) }}</span></td>
+                                        <td><CurrencyInput v-model="vForm.percentualIncorporacao" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>(-) MKT</td>
+                                        <td class="text-end"><span class="vf-badge">{{ fmtReais(dre.marketingReais) }}</span></td>
+                                        <td><CurrencyInput v-model="vForm.percentualMarketing" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>(-) Obras totais</td>
+                                        <td class="text-end"><span class="vf-badge">{{ fmtReais(dre.obrasReais) }}</span></td>
+                                        <td><CurrencyInput v-model="vForm.percentualCustoObra" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>(-) Gestão de Vendas</td>
+                                        <td class="text-end"><span class="vf-badge">{{ fmtReais(dre.gestaoVendasReais) }}</span></td>
+                                        <td><CurrencyInput v-model="vForm.percentualDespesaVenda" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>(-) Administração</td>
+                                        <td class="text-end"><span class="vf-badge">{{ fmtReais(dre.administracaoReais) }}</span></td>
+                                        <td><CurrencyInput v-model="vForm.percentualAdministracao" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>(-) Terreno</td>
+                                        <td class="text-end"><span class="vf-badge">{{ fmtReais(dre.terrenoReais) }}</span></td>
+                                        <td><CurrencyInput v-model="vForm.percentualAquisicaoTerreno" /></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- ─── Cards de Resultado ───────────────────── -->
+                            <p class="vf-secao-titulo">Resultados</p>
+                            <div class="row g-2 mb-3">
+
+                                <!-- Receita Líquida -->
+                                <div class="col-md-4">
+                                    <div class="vf-tooltip-wrapper">
+                                        <div class="vf-resultado-card">
+                                            <div class="vf-resultado-label">(=) Receita líquida da venda das unidades</div>
+                                            <div class="vf-resultado-valor">{{ fmtReais(dre.receitaLiquida) }}</div>
+                                            <div class="vf-resultado-pct">{{ fmtPct(dre.receitaLiquidaPct) }}</div>
+                                        </div>
+                                        <div class="vf-tooltip-calculo">
+                                            <div class="vf-tooltip-titulo">Como é calculado</div>
+                                            <div class="vf-tooltip-linha">
+                                                <span>(+) VGV</span><span>{{ fmtReais(vgvCalculado) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) Comissões ({{ vForm.percentualComissao }}%)</span><span>{{ fmtReais(dre.comissoesReais) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) Tributos ({{ vForm.percentualTributo }}%)</span><span>{{ fmtReais(dre.tributosReais) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-divisor"></div>
+                                            <div class="vf-tooltip-linha vf-tooltip-resultado">
+                                                <span>(=) Receita Líquida</span><span>{{ fmtReais(dre.receitaLiquida) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Comissão %</label>
-                                    <CurrencyInput v-model="vForm.percentualComissao" />
+
+                                <!-- Resultado Operacional -->
+                                <div class="col-md-4">
+                                    <div class="vf-tooltip-wrapper">
+                                        <div class="vf-resultado-card">
+                                            <div class="vf-resultado-label">(=) Resultado operacional</div>
+                                            <div class="vf-resultado-valor">{{ fmtReais(dre.resultadoOperacional) }}</div>
+                                            <div class="vf-resultado-pct">{{ fmtPct(dre.resultadoOperacionalPct) }}</div>
+                                        </div>
+                                        <div class="vf-tooltip-calculo">
+                                            <div class="vf-tooltip-titulo">Como é calculado</div>
+                                            <div class="vf-tooltip-linha">
+                                                <span>(+) Receita Líquida</span><span>{{ fmtReais(dre.receitaLiquida) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) Incorporação ({{ vForm.percentualIncorporacao }}%)</span><span>{{ fmtReais(dre.incorporacaoReais) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) MKT ({{ vForm.percentualMarketing }}%)</span><span>{{ fmtReais(dre.marketingReais) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) Obras totais ({{ vForm.percentualCustoObra }}%)</span><span>{{ fmtReais(dre.obrasReais) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) Gestão de Vendas ({{ vForm.percentualDespesaVenda }}%)</span><span>{{ fmtReais(dre.gestaoVendasReais) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) Administração ({{ vForm.percentualAdministracao }}%)</span><span>{{ fmtReais(dre.administracaoReais) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-divisor"></div>
+                                            <div class="vf-tooltip-linha vf-tooltip-resultado">
+                                                <span>(=) Resultado Operacional</span><span>{{ fmtReais(dre.resultadoOperacional) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <!-- Resultado Líquido -->
+                                <div class="col-md-4">
+                                    <div class="vf-tooltip-wrapper">
+                                        <div class="vf-resultado-card"
+                                            :class="{
+                                                'vf-resultado-card--positivo': dre.resultadoLiquido > 0,
+                                                'vf-resultado-card--negativo': dre.resultadoLiquido < 0,
+                                            }"
+                                        >
+                                            <div class="vf-resultado-label">(=) Resultado líquido</div>
+                                            <div class="vf-resultado-valor">{{ fmtReais(dre.resultadoLiquido) }}</div>
+                                            <div class="vf-resultado-pct">{{ fmtPct(dre.resultadoLiquidoPct) }}</div>
+                                        </div>
+                                        <div class="vf-tooltip-calculo">
+                                            <div class="vf-tooltip-titulo">Como é calculado</div>
+                                            <div class="vf-tooltip-linha">
+                                                <span>(+) Resultado Operacional</span><span>{{ fmtReais(dre.resultadoOperacional) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) Terreno ({{ vForm.percentualAquisicaoTerreno }}%)</span><span>{{ fmtReais(dre.terrenoReais) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-divisor"></div>
+                                            <div class="vf-tooltip-linha vf-tooltip-resultado">
+                                                <span>(=) Resultado Líquido</span><span>{{ fmtReais(dre.resultadoLiquido) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Participação Taboada -->
+                                <div class="col-md-6">
+                                    <div class="vf-tooltip-wrapper">
+                                        <div class="vf-resultado-card vf-resultado-card--neutro">
+                                            <div class="vf-resultado-label">Participação Taboada (7% do Resultado Líquido)</div>
+                                            <div class="vf-resultado-valor">{{ fmtReais(participacaoTaboada) }}</div>
+                                        </div>
+                                        <div class="vf-tooltip-calculo">
+                                            <div class="vf-tooltip-titulo">Como é calculado</div>
+                                            <div class="vf-tooltip-linha">
+                                                <span>Resultado Líquido</span><span>{{ fmtReais(dre.resultadoLiquido) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>× Participação Taboada</span><span>7%</span>
+                                            </div>
+                                            <div class="vf-tooltip-divisor"></div>
+                                            <div class="vf-tooltip-linha vf-tooltip-resultado">
+                                                <span>(=) Participação Taboada</span><span>{{ fmtReais(participacaoTaboada) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- % após Part. Taboada -->
+                                <div class="col-md-6">
+                                    <div class="vf-tooltip-wrapper">
+                                        <div class="vf-resultado-card vf-resultado-card--neutro">
+                                            <div class="vf-resultado-label">Resultado Líquido após Part. Taboada (%)</div>
+                                            <div class="vf-resultado-valor">{{ fmtPct(resultadoLiquidoAposParticipacaoPct) }}</div>
+                                        </div>
+                                        <div class="vf-tooltip-calculo">
+                                            <div class="vf-tooltip-titulo">Como é calculado</div>
+                                            <div class="vf-tooltip-linha">
+                                                <span>Resultado Líquido</span><span>{{ fmtReais(dre.resultadoLiquido) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha vf-tooltip-deducao">
+                                                <span>(-) Participação Taboada</span><span>{{ fmtReais(participacaoTaboada) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-linha">
+                                                <span>÷ VGV</span><span>{{ fmtReais(vgvCalculado) }}</span>
+                                            </div>
+                                            <div class="vf-tooltip-divisor"></div>
+                                            <div class="vf-tooltip-linha vf-tooltip-resultado">
+                                                <span>(=) % do VGV</span><span>{{ fmtPct(resultadoLiquidoAposParticipacaoPct) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
-                                    <label class="table-header">Tributos R$</label>
-                                    <CurrencyInput v-model="vForm.valorTributo" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Tributos %</label>
-                                    <CurrencyInput v-model="vForm.percentualTributo" />
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
-                                    <label class="table-header">Incorporação R$</label>
-                                    <CurrencyInput v-model="vForm.valorIncorporacao" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Incorporação %</label>
-                                    <CurrencyInput v-model="vForm.percentualIncorporacao" />
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
-                                    <label class="table-header">Marketing R$</label>
-                                    <CurrencyInput v-model="vForm.valorMarketing" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Marketing %</label>
-                                    <CurrencyInput v-model="vForm.percentualMarketing" />
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
-                                    <label class="table-header">Gestão Obra R$</label>
-                                    <CurrencyInput v-model="vForm.valorDespesaObra" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Gestão Obra %</label>
-                                    <CurrencyInput v-model="vForm.percentualDespesaObra" />
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
-                                    <label class="table-header">Gestão Vendas R$</label>
-                                    <CurrencyInput v-model="vForm.valorDespesaVenda" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Gestão Vendas %</label>
-                                    <CurrencyInput v-model="vForm.percentualDespesaVenda" />
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="form-group col-6">
-                                    <label class="table-header">Administração R$</label>
-                                    <CurrencyInput v-model="vForm.valorAdministracao" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label class="table-header">Administração %</label>
-                                    <CurrencyInput v-model="vForm.percentualAdministracao" />
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-end gap-2 mt-3">
+                            <div class="d-flex justify-content-end gap-2 mt-2">
                                 <button type="button" class="btn btn-outline-dark btn-sm" @click="cancelViabilidadeForm()">
                                     <i class="bi-x-lg me-1"></i>Cancelar
                                 </button>
@@ -383,6 +482,63 @@ export default {
         CurrencyInput,
         ConfirmationDialog
     },
+    computed: {
+
+        // ─── VGV calculado a partir da área total e do valor por m² ──────
+        vgvCalculado() {
+            const areaTotalM2 = parseFloat(this.vForm.areaTotalM2)  || 0;
+            const valorPorM2  = parseFloat(this.vForm.valorPrevisto) || 0;
+            return areaTotalM2 * valorPorM2;
+        },
+
+        // ─── DRE — Demonstrativo de Resultado do Empreendimento ───────────
+        dre() {
+            const vgv = this.vgvCalculado;
+
+            const comissoesReais      = this.calcSobreVgv(vgv, this.vForm.percentualComissao);
+            const tributosReais       = this.calcSobreVgv(vgv, this.vForm.percentualTributo);
+            const receitaLiquida      = vgv - comissoesReais - tributosReais;
+
+            const incorporacaoReais   = this.calcSobreVgv(vgv, this.vForm.percentualIncorporacao);
+            const marketingReais      = this.calcSobreVgv(vgv, this.vForm.percentualMarketing);
+            const obrasReais          = this.calcSobreVgv(vgv, this.vForm.percentualCustoObra);
+            const gestaoVendasReais   = this.calcSobreVgv(vgv, this.vForm.percentualDespesaVenda);
+            const administracaoReais  = this.calcSobreVgv(vgv, this.vForm.percentualAdministracao);
+
+            const resultadoOperacional = receitaLiquida
+                - incorporacaoReais - marketingReais - obrasReais
+                - gestaoVendasReais - administracaoReais;
+
+            const terrenoReais     = this.calcSobreVgv(vgv, this.vForm.percentualAquisicaoTerreno);
+            const resultadoLiquido = resultadoOperacional - terrenoReais;
+
+            const receitaLiquidaPct       = vgv > 0 ? (receitaLiquida       / vgv) * 100 : 0;
+            const resultadoOperacionalPct = vgv > 0 ? (resultadoOperacional  / vgv) * 100 : 0;
+            const resultadoLiquidoPct     = vgv > 0 ? (resultadoLiquido      / vgv) * 100 : 0;
+
+            return {
+                comissoesReais, tributosReais,
+                receitaLiquida, receitaLiquidaPct,
+                incorporacaoReais, marketingReais, obrasReais, gestaoVendasReais, administracaoReais,
+                resultadoOperacional, resultadoOperacionalPct,
+                terrenoReais, resultadoLiquido, resultadoLiquidoPct,
+            };
+        },
+
+        // ─── Participação Taboada (7% do Resultado Líquido) ──────────────
+        participacaoTaboada() {
+            return this.dre.resultadoLiquido * 0.07;
+        },
+
+        // ─── Resultado líquido após descontar a participação Taboada ─────
+        resultadoLiquidoAposParticipacaoPct() {
+            const vgv = this.vgvCalculado;
+            if (!vgv) return 0;
+            return ((this.dre.resultadoLiquido - this.participacaoTaboada) / vgv) * 100;
+        },
+
+    },
+
     watch: {
         refreshCount() {
             this.cleanFields();
@@ -578,12 +734,40 @@ export default {
             this.vForm = this.emptyVForm();
         },
 
+        // ─── Fórmulas base ───────────────────────────────────────────────
+        calcSobreVgv(vgv, percentual) {
+            return vgv * ((parseFloat(percentual) || 0) / 100);
+        },
+
+        // ─── Formatação ──────────────────────────────────────────────────
+        fmtReais(valor) {
+            const n = parseFloat(valor) || 0;
+            return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+        fmtPct(valor) {
+            const n = parseFloat(valor) || 0;
+            return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+        },
+
         saveViabilidade() {
             const data = {
                 action: this.viabilidadeAction,
                 id: this.vForm.id,
                 empreendimentoId: this.effectiveEmpreendimentoId(),
-                ...this.vForm
+                ...this.vForm,
+                // Valores calculados — salvos para uso no portfólio e relatórios
+                vgv:                   this.vgvCalculado,
+                resultadoLiquido:      this.dre.resultadoLiquido,
+                valorAquisicaoTerreno: this.dre.terrenoReais,
+                valorCustoObra:        this.dre.obrasReais,
+                valorComissao:         this.dre.comissoesReais,
+                valorTributo:          this.dre.tributosReais,
+                valorIncorporacao:     this.dre.incorporacaoReais,
+                valorMarketing:        this.dre.marketingReais,
+                valorDespesaVenda:     this.dre.gestaoVendasReais,
+                valorAdministracao:    this.dre.administracaoReais,
+                valorDespesaObra:      0,
+                percentualDespesaObra: 0,
             };
 
             this.showPreLoader();
@@ -817,4 +1001,171 @@ export default {
     border-top: 1px solid #dee2e6;
     padding-top: 1rem;
 }
+
+/* ─── Títulos de seção do formulário de viabilidade ── */
+.vf-secao-titulo {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #124C60;
+    border-bottom: 2px solid #124C60;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+}
+
+/* ─── Banner VGV calculado ───────────────────────── */
+.vf-vgv-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #e8f4f8;
+    border: 1px solid #b6d4e3;
+    border-radius: 6px;
+    padding: 8px 14px;
+}
+.vf-vgv-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #124C60;
+    flex: 1;
+}
+.vf-vgv-valor {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #124C60;
+}
+.vf-vgv-formula {
+    font-size: 0.72rem;
+    color: #7aa8bc;
+}
+
+/* ─── Tabela DRE ─────────────────────────────────── */
+.vf-tabela-dre thead th {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #124C60;
+    background: #e8f4f8;
+    border-bottom: 2px solid #b6d4e3;
+    padding: 7px 10px;
+}
+.vf-tabela-dre td {
+    vertical-align: middle;
+    padding: 4px 10px;
+    font-size: 0.82rem;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+}
+.vf-tabela-dre .vf-col-reais { width: 175px; }
+.vf-tabela-dre .vf-col-pct   { width: 110px; }
+.vf-linha-vgv td { background: #e8f4f8; }
+
+/* ─── Badges de valor calculado ─────────────────── */
+.vf-badge {
+    display: inline-block;
+    font-weight: 500;
+    font-size: 0.78rem;
+    padding: 2px 8px;
+    background: #e0eff5;
+    color: #124C60;
+    border-radius: 4px;
+    min-width: 140px;
+    text-align: right;
+}
+.vf-badge-vgv {
+    font-weight: 700;
+    background: #124C60;
+    color: #fff;
+}
+
+/* ─── Cards de resultado ─────────────────────────── */
+.vf-resultado-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+}
+.vf-resultado-card--positivo { background: #d1fae5; border-color: #6ee7b7; }
+.vf-resultado-card--negativo { background: #fee2e2; border-color: #fca5a5; }
+.vf-resultado-card--neutro   { background: #eff6ff; border-color: #bfdbfe; }
+.vf-resultado-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #555;
+    margin-bottom: 4px;
+}
+.vf-resultado-valor {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #124C60;
+}
+.vf-resultado-pct {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 1px;
+}
+
+/* ─── Tooltips de cálculo ────────────────────────── */
+.vf-tooltip-wrapper {
+    position: relative;
+}
+.vf-tooltip-wrapper:hover .vf-tooltip-calculo {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+.vf-tooltip-calculo {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    width: 300px;
+    background: #1a2e3a;
+    color: #e8f4f8;
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+    pointer-events: none;
+}
+.vf-tooltip-calculo::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1a2e3a;
+}
+.vf-tooltip-titulo {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #7eb8cc;
+    margin-bottom: 8px;
+}
+.vf-tooltip-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    padding: 2px 0;
+    color: #cde8f0;
+    gap: 8px;
+}
+.vf-tooltip-linha span:first-child { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vf-tooltip-linha span:last-child  { font-weight: 600; white-space: nowrap; color: #ffffff; }
+.vf-tooltip-deducao { color: #f9a8b0; }
+.vf-tooltip-deducao span:last-child { color: #fca5a5; }
+.vf-tooltip-divisor { border-top: 1px solid rgba(255,255,255,0.15); margin: 6px 0; }
+.vf-tooltip-resultado span:last-child { color: #6ee7b7; font-size: 0.8rem; }
 </style>
