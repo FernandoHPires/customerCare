@@ -67,23 +67,6 @@ class Utils {
         }
     }
 
-    public static function getFundNames() {
-        $fundNames = array();
-        $fundNames['Ryan Mortgage Income Fund Inc.'] = 'Amur Capital Income Fund Inc.';
-        $fundNames['Ryan Mortgage'] = 'Amur Capital Income Fund';
-        $fundNames['RMIF'] = 'ACIF';
-        $fundNames['RMC'] = 'ACIF';
-        $fundNames['Manchester Investments Inc.'] = 'Amur Capital Conservative Income Fund Inc.';
-        $fundNames['Manchester Investments Inc'] = 'Amur Capital Conservative Income Fund Inc.';
-        $fundNames['Manchester Investments'] = 'Amur Capital Conservative Income Fund';
-        $fundNames['MII'] = 'ACCIF';
-        $fundNames['Blue Stripe Financial Ltd.'] = 'Amur Capital High Yield Fund Inc.';
-        $fundNames['Blue Stripe Financial'] = 'Amur Capital High Yield Fund';
-        $fundNames['BSF'] = 'ACHYF';
-
-        return $fundNames;
-    }
-
     public static function oneLineAddress($unitNumber, $streetNumber, $streetName, $streetType, $streetDirection, $city, $province, $postalCode) {
 
         $addr = "";

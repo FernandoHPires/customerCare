@@ -30,7 +30,7 @@ class SsoAuthentication {
         }
 
         $request->session()->put('redirect', $request->path());
-        return redirect(env('AMUR_PORTAL') . '/web/sso-auth?system=' . env('SYSTEM_APPLICATION_ID'));
+        return redirect('/web/sso-auth?system=' . env('SYSTEM_APPLICATION_ID'));
     }
 
 }

@@ -16,43 +16,6 @@ export const util = {
                 mask: "iso",
                 timeAdjust: "12:00:00",
             },
-            papCompanies: [
-                {
-                    id: 5,
-                    name: "Ryan Mortgage Income Fund Inc.",
-                    done: 0,
-                    pending: 0,
-                    rejected: 0,
-                },
-                {
-                    id: 16,
-                    name: "Manchester Investments Inc.",
-                    done: 0,
-                    pending: 0,
-                    rejected: 0,
-                },
-                {
-                    id: 182,
-                    name: "Blue Stripe Financial Ltd.",
-                    done: 0,
-                    pending: 0,
-                    rejected: 0,
-                },
-                {
-                    id: 183,
-                    name: "Ryan Quebec Inc.",
-                    done: 0,
-                    pending: 0,
-                    rejected: 0,
-                },
-                {
-                    id: 1970,
-                    name: "Amur Financial Group",
-                    done: 0,
-                    pending: 0,
-                    rejected: 0,
-                },
-            ],
             monthNames: [
                 { id: 1, value: "January" },
                 { id: 2, value: "February" },
