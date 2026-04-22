@@ -11,28 +11,22 @@
             </div>
         </div>
 
-        <!-- Quick access -->
-        <div class="home-cards">
-            <div class="home-card" @click="$router.push({ path: '/portfolio-view', query: { tab: 'dashboard' } })">
+        <!-- Acesso rápido -->
+        <div
+            v-if="menuCarregado"
+            :class="['home-cards', cardsAcesso.length > 3 ? 'home-cards--grid2' : '']"
+        >
+            <div
+                v-for="card in cardsAcesso"
+                :key="card.label"
+                class="home-card"
+                @click="navegarPara(card)"
+            >
                 <div class="home-card-icon">
-                    <i class="bi bi-pie-chart"></i>
+                    <i :class="['bi', card.icon]"></i>
                 </div>
-                <div class="home-card-label">Dashboard</div>
-                <div class="home-card-sub">Indicadores e gráficos</div>
-            </div>
-            <div class="home-card" @click="$router.push({ path: '/portfolio-view', query: { tab: 'visaoGeral' } })">
-                <div class="home-card-icon">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
-                <div class="home-card-label">Portfolio</div>
-                <div class="home-card-sub">Visão geral dos empreendimentos</div>
-            </div>
-            <div class="home-card" @click="$router.push({ path: '/portfolio-view', query: { tab: 'simulacaoViabilidade' } })">
-                <div class="home-card-icon">
-                    <i class="bi bi-calculator"></i>
-                </div>
-                <div class="home-card-label">Simulação de Viabilidades</div>
-                <div class="home-card-sub">Análise e projeções</div>
+                <div class="home-card-label">{{ card.label }}</div>
+                <div class="home-card-sub">{{ card.sub }}</div>
             </div>
         </div>
 
@@ -42,11 +36,56 @@
 <script>
 import { util } from "../mixins/util";
 
+// Mapa de subtítulos amigáveis por rota
+const SUBTITULOS = {
+    '/portfolio-view'  : 'Portfólio de empreendimentos',
+    '/clientes'        : 'Gestão de clientes',
+    '/usuarios'        : 'Gestão de usuários',
+    '/perfis'          : 'Perfis de acesso',
+    '/permissoes'      : 'Configuração de permissões',
+};
+
+// Ícones distintos por rota (Bootstrap Icons)
+const ICONES = {
+    '/clientes'        : 'bi-building',
+    '/usuarios'        : 'bi-person-gear',
+    '/perfis'          : 'bi-shield-check',
+    '/permissoes'      : 'bi-key',
+    '/portfolio-view'  : 'bi-graph-up-arrow',
+};
+
+// Cards fixos exibidos quando o usuário tem acesso ao portfolio
+const CARDS_PORTFOLIO = [
+    {
+        label : 'Dashboard',
+        sub   : 'Indicadores e gráficos',
+        icon  : 'bi-pie-chart',
+        path  : '/portfolio-view',
+        query : { tab: 'dashboard' },
+    },
+    {
+        label : 'Portfolio',
+        sub   : 'Visão geral dos empreendimentos',
+        icon  : 'bi-graph-up-arrow',
+        path  : '/portfolio-view',
+        query : { tab: 'visaoGeral' },
+    },
+    {
+        label : 'Simulação de Viabilidades',
+        sub   : 'Análise e projeções',
+        icon  : 'bi-calculator',
+        path  : '/portfolio-view',
+        query : { tab: 'simulacaoViabilidade' },
+    },
+];
+
 export default {
     mixins: [util],
     data() {
         return {
-            user: {},
+            user          : {},
+            menus         : [],
+            menuCarregado : false,
         };
     },
     computed: {
@@ -58,16 +97,70 @@ export default {
         },
         currentDate() {
             const date = new Date().toLocaleDateString("pt-BR", {
-                weekday: "long",
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
+                weekday : "long",
+                day     : "2-digit",
+                month   : "long",
+                year    : "numeric",
             });
             return date.charAt(0).toUpperCase() + date.slice(1);
+        },
+
+        // Lista plana de todas as rotas acessíveis ao usuário (exceto Home)
+        rotasAcessiveis() {
+            const rotas = [];
+            for (const menu of this.menus) {
+                // Pula apenas o Home (path '/')
+                if (menu.path === '/') continue;
+
+                if (menu.submenus && menu.submenus.length) {
+                    // Menu pai com path null mas com filhos (ex: Cadastros, Acessos)
+                    // — processa os submenus normalmente
+                    for (const sub of menu.submenus) {
+                        if (sub.type === 'page' && sub.path) {
+                            rotas.push({
+                                label    : sub.name,
+                                icon     : sub.icon || 'bi-arrow-right-circle',
+                                path     : sub.path,
+                                categoria: menu.name,
+                            });
+                        }
+                    }
+                } else if (menu.path) {
+                    // Menu direto com URL própria (ex: Portfolio)
+                    rotas.push({
+                        label    : menu.name,
+                        icon     : menu.icon || 'bi-arrow-right-circle',
+                        path     : menu.path,
+                        categoria: '',
+                    });
+                }
+            }
+            return rotas;
+        },
+
+        temAcessoPortfolio() {
+            return this.rotasAcessiveis.some(r => r.path === '/portfolio-view');
+        },
+
+        // Cards que serão exibidos na tela
+        cardsAcesso() {
+            if (this.temAcessoPortfolio) {
+                return CARDS_PORTFOLIO;
+            }
+
+            // Sem acesso ao portfolio: gera cards de tudo que o usuário tem acesso
+            return this.rotasAcessiveis.map(rota => ({
+                label : rota.label,
+                sub   : SUBTITULOS[rota.path] || rota.categoria || 'Acesso rápido',
+                icon  : ICONES[rota.path] || rota.icon || 'bi-arrow-right-circle',
+                path  : rota.path,
+                query : {},
+            }));
         },
     },
     mounted() {
         this.loadUser();
+        this.loadMenus();
     },
     methods: {
         loadUser() {
@@ -77,9 +170,24 @@ export default {
                         this.user = response.data.data;
                     }
                 })
-                .catch((error) => {
-                    
+                .catch(() => {});
+        },
+
+        loadMenus() {
+            this.axios({ method: "get", url: "/web/menus" })
+                .then((response) => {
+                    if (this.checkApiResponse(response)) {
+                        this.menus = response.data.data;
+                    }
+                })
+                .catch(() => {})
+                .finally(() => {
+                    this.menuCarregado = true;
                 });
+        },
+
+        navegarPara(card) {
+            this.$router.push({ path: card.path, query: card.query || {} });
         },
     },
 };
@@ -147,6 +255,13 @@ export default {
     width: 100%;
     max-width: 800px;
     flex-wrap: wrap;
+}
+
+/* Grid 2 colunas — usado quando há mais de 3 cards */
+.home-cards--grid2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    justify-items: stretch;
 }
 
 .home-card {
