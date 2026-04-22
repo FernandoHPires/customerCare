@@ -44,6 +44,11 @@ class LoginController extends Controller {
     // ── Verifica o token Turnstile na API do Cloudflare ───────────────────
     private function validarTurnstile(string $token, string $ip): bool {
 
+        // Em local/development não valida — chaves de produção não funcionam no localhost
+        if (env('APP_ENV') !== 'production') {
+            return true;
+        }
+
         if (empty($token)) {
             return false;
         }

@@ -1,55 +1,80 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Create The Application
-|--------------------------------------------------------------------------
-|
-| The first thing we will do is create a new Laravel application instance
-| which serves as the "glue" for all the components of Laravel, and is
-| the IoC container for the system binding all of the various parts.
-|
-*/
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
-$app = new Illuminate\Foundation\Application(
-    $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
-);
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web:      __DIR__.'/../routes/web.php',
+        api:      __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
+        health:   '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
 
-/*
-|--------------------------------------------------------------------------
-| Bind Important Interfaces
-|--------------------------------------------------------------------------
-|
-| Next, we need to bind some important interfaces into the container so
-| we will be able to resolve them when needed. The kernels serve the
-| incoming requests to this application from both the web and CLI.
-|
-*/
+        // ── Trust proxies (Nginx / load-balancer) ─────────────────────────
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                   | Request::HEADER_X_FORWARDED_HOST
+                   | Request::HEADER_X_FORWARDED_PORT
+                   | Request::HEADER_X_FORWARDED_PROTO
+                   | Request::HEADER_X_FORWARDED_AWS_ELB
+        );
 
-$app->singleton(
-    Illuminate\Contracts\Http\Kernel::class,
-    App\Http\Kernel::class
-);
+        // ── Middleware global (todas as requisições) ──────────────────────
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
-$app->singleton(
-    Illuminate\Contracts\Console\Kernel::class,
-    App\Console\Kernel::class
-);
+        // ── API group: sessão habilitada (ApiAuthentication usa session()) ─
+        $middleware->appendToGroup('api', [
+            \Illuminate\Session\Middleware\StartSession::class,
+        ]);
 
-$app->singleton(
-    Illuminate\Contracts\Debug\ExceptionHandler::class,
-    App\Exceptions\Handler::class
-);
+        // ── Aliases de middleware (usados nas rotas) ──────────────────────
+        $middleware->alias([
+            'accessRight'       => \App\Http\Middleware\AccessRight::class,
+            'noAuthentication'  => \App\Http\Middleware\NoAuthentication::class,
+            'webAuthentication' => \App\Http\Middleware\WebAuthentication::class,
+            'ssoAuthentication' => \App\Http\Middleware\SsoAuthentication::class,
+            'apiAuthentication' => \App\Http\Middleware\ApiAuthentication::class,
+        ]);
 
-/*
-|--------------------------------------------------------------------------
-| Return The Application
-|--------------------------------------------------------------------------
-|
-| This script returns the application instance. The instance is given to
-| the calling script so we can separate the building of the instances
-| from the actual running of the application and sending responses.
-|
-*/
+        // ── CSRF: excluir rotas herdadas (limpeza de exceções antigas) ────
+        $middleware->validateCsrfTokens(except: [
+            // Adicione aqui rotas que precisem ignorar CSRF (ex: webhooks)
+        ]);
 
-return $app;
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+
+        // Nunca exibe senha nos flashes de validação
+        $exceptions->dontFlash(['password', 'password_confirmation', 'current_password']);
+
+        // Envia email com o erro em produção
+        $exceptions->report(function (\Throwable $e) {
+            if (env('APP_ENV') === 'production') {
+                $sessionKey = session('session_key');
+                \App\AUni\Utilities\Utils::sendEmail(
+                    ['fhpires9@gmail.com'],
+                    env('APP_ENV') . ' - UNI Error',
+                    $sessionKey . ' | ' . $e->getMessage() . ' | ' . $e->getTraceAsString()
+                );
+            }
+        });
+
+        // Retorna JSON padronizado para erros de validação
+        $exceptions->render(function (ValidationException $e, $request) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => $e->getMessage(),
+                    'errors'  => $e->errors(),
+                ], 200);
+            }
+        });
+
+    })->create();
