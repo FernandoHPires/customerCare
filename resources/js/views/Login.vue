@@ -16,7 +16,7 @@
 
             <!-- Logo -->
             <div class="login-logo">
-                <img src="/images/uniLogo.png" alt="UNI Gestão de Negócios" />
+                <img src="/images/uniLogoMod2.png" alt="UNI Gestão de Negócios" />
             </div>
 
             <!-- ══════════════ TELA DE LOGIN ══════════════ -->
@@ -396,10 +396,10 @@ export default {
     position: relative;
     z-index: 10;
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
     background: rgba(255, 255, 255, 0.97);
     border-radius: 24px;
-    padding: 44px 40px 28px;
+    padding: 28px 32px 28px;
     box-shadow:
         0 32px 80px rgba(0, 0, 0, 0.35),
         0 0 0 1px rgba(255, 255, 255, 0.12);
@@ -416,14 +416,13 @@ export default {
 /* ─── Logo ───────────────────────────────────── */
 .login-logo {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 .login-logo img {
-    height: 120px;
-    width: auto;
-    max-width: 100%;
+    width: 60%;
+    height: auto;
     object-fit: contain;
-    filter: drop-shadow(0 4px 16px rgba(18, 76, 96, 0.15));
+    filter: drop-shadow(0 8px 24px rgba(18, 76, 96, 0.25));
 }
 
 /* ─── Título e subtítulo ─────────────────────── */
@@ -438,7 +437,7 @@ export default {
     font-size: 0.85rem;
     color: #7a9aaa;
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 20px;
 }
 
 /* ═══════════════════════════════════════════════
