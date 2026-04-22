@@ -24,7 +24,6 @@ class UsersTable extends Authenticatable {
         'user_dept',
         'default_company_id',
         'perfil_id',
-        'admin',
         'session_token',
         'reset_request',
         'is_uni_user',

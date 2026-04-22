@@ -28,7 +28,7 @@
 
         @if(session('invite_error'))
         <script>
-            sessionStorage.setItem('auth_alert', '{{ session('invite_error') }}');
+            sessionStorage.setItem('auth_alert', {{ Js::from(session('invite_error')) }});
         </script>
         @endif
     </body>

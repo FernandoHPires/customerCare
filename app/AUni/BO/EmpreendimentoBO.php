@@ -56,11 +56,15 @@ class EmpreendimentoBO {
                 $empreendimento = new Empreendimentos();
                 $clienteId = $clientes->id;
             } else {
-                $clienteId = $fields->clienteId;
                 $empreendimento = Empreendimentos::find($fields->id);
                 if (!$empreendimento) {
                     return false;
                 }
+                // Verifica se usuário não-UNI está editando empreendimento da própria empresa
+                if ($usersTable->is_uni_user !== 'S' && $empreendimento->cliente_id !== $usersTable->default_company_id) {
+                    return false;
+                }
+                $clienteId = $fields->clienteId;
             }
             $empreendimento->cliente_id = $clienteId;
             $empreendimento->nome = $fields->nome;
@@ -111,6 +115,13 @@ class EmpreendimentoBO {
             if (!$empreendimento) {
                 return false;
             }
+
+            // Verifica ownership: usuários não-UNI só deletam empreendimentos da própria empresa
+            $user = UsersTable::find($userId);
+            if ($user && $user->is_uni_user !== 'S' && $empreendimento->cliente_id !== $user->default_company_id) {
+                return false;
+            }
+
             $empreendimento->deleted_by = $userId;
             $empreendimento->save();
             $empreendimento->delete();

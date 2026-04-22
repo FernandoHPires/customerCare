@@ -330,21 +330,21 @@ export const util = {
         },
         showAlert: function (type) {
             if(type == "success") {
-                document.getElementById("alert-message-success").innerHTML = this.alertMessage
+                document.getElementById("alert-message-success").textContent = this.alertMessage
                 document.getElementById("alert-success").style.display = ""
                 setTimeout(() => {
                     this.hideAlert("alert-success")
                 }, 3000)
 
             } else if(type == "warning") {
-                document.getElementById("alert-message-warning").innerHTML = this.alertMessage
+                document.getElementById("alert-message-warning").textContent = this.alertMessage
                 document.getElementById("alert-warning").style.display = ""
                 setTimeout(() => {
                     this.hideAlert("alert-warning")
                 }, 5000)
 
             } else {
-                document.getElementById("alert-message-error").innerHTML = this.alertMessage
+                document.getElementById("alert-message-error").textContent = this.alertMessage
                 document.getElementById("alert-error").style.display = ""
                 setTimeout(() => {
                     this.hideAlert("alert-error")

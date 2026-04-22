@@ -3,12 +3,12 @@
 
         <!-- Hero -->
         <div class="home-hero">
-            <div class="home-hero-bg-text">UNI</div>
             <div class="home-hero-content">
                 <div class="home-greeting">{{ greeting }},</div>
                 <div class="home-username">{{ user.fullName || '...' }}</div>
                 <div class="home-date">{{ currentDate }}</div>
             </div>
+            <div class="home-hero-bg-text">UNI</div>
         </div>
 
         <!-- Acesso rápido -->
@@ -204,33 +204,60 @@ export default {
 
 /* Hero */
 .home-hero {
-    background: linear-gradient(135deg, #124C60 0%, #20556E 60%, #1a6a88 100%);
+    position: relative;
     border-radius: 20px;
+    overflow: hidden;
     width: 100%;
     max-width: 800px;
     padding: 56px 64px;
     color: #fff;
     box-shadow: 0 8px 32px rgba(18, 76, 96, 0.25);
+
+    /* 3 camadas empilhadas:
+       1. Overlay: cor sólida na esquerda → transparente na direita
+       2. Imagem do condomínio
+       3. Fallback de cor caso a imagem não carregue              */
+    background:
+        linear-gradient(
+            90deg,
+            rgba(18, 76, 96, 0.95)  0%,
+            rgba(18, 76, 96, 0.85) 20%,
+            rgba(18, 76, 96, 0.40) 45%,
+            rgba(18, 76, 96, 0.10) 65%,
+            transparent            85%
+        ),
+        url('/images/img_condominio.png') center / cover no-repeat,
+        #124C60;
+}
+
+/* Conteúdo e UNI ficam acima de tudo */
+.home-hero::before { content: none; }
+.home-hero::after  { content: none; }
+
+/* Conteúdo acima dos pseudo-elementos */
+.home-hero-content {
     position: relative;
+    z-index: 2;
 }
 
 .home-hero-bg-text {
     position: absolute;
-    right: 24px;
-    bottom: -10px;
+    right: 30px;
+    bottom: 0px;
     font-size: 140px;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.22);
     line-height: 1;
     pointer-events: none;
     letter-spacing: -8px;
     user-select: none;
+    z-index: 2;
 }
 
 .home-greeting {
     font-size: 1.1rem;
     font-weight: 400;
-    opacity: 0.75;
+    opacity: 0.80;
     text-transform: capitalize;
     margin-bottom: 4px;
 }
@@ -245,7 +272,15 @@ export default {
 
 .home-date {
     font-size: 0.9rem;
-    opacity: 0.6;
+    opacity: 0.65;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.home-date::before {
+    content: "📅";
+    font-size: 0.85rem;
 }
 
 /* Cards */

@@ -6,6 +6,8 @@ use App\AUni\Bean\ILogger;
 use App\AUni\Bean\IDB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Viabilidades;
+use App\Models\Empreendimentos;
+use App\Models\UsersTable;
 
 class ViabilidadeBO {
 
@@ -17,7 +19,29 @@ class ViabilidadeBO {
         $this->db = $db;
     }
 
+    // ── Verifica se o usuário logado tem acesso ao empreendimento ────────────
+    private function verificarAcessoEmpreendimento($empreendimentoId): bool {
+        $user = UsersTable::find(Auth::user()->user_id);
+
+        // Usuários UNI têm acesso irrestrito
+        if ($user && $user->is_uni_user === 'S') {
+            return true;
+        }
+
+        $empreendimento = Empreendimentos::find($empreendimentoId);
+
+        if (!$empreendimento) {
+            return false;
+        }
+
+        return $user && $empreendimento->cliente_id === $user->default_company_id;
+    }
+
     public function getViabilidades($empreendimentoId) {
+
+        if (!$this->verificarAcessoEmpreendimento($empreendimentoId)) {
+            return null;
+        }
 
         $viabilidades = Viabilidades::query()
             ->where('empreendimento_id', $empreendimentoId)
@@ -43,6 +67,9 @@ class ViabilidadeBO {
         try {
 
             if ($fields->action === 'Adicionar') {
+                if (!$this->verificarAcessoEmpreendimento($fields->empreendimentoId)) {
+                    return false;
+                }
                 $viabilidade = new Viabilidades();
                 $viabilidade->empreendimento_id = $fields->empreendimentoId;
                 $viabilidade->status = 'I';
@@ -50,6 +77,9 @@ class ViabilidadeBO {
             } else {
                 $viabilidade = Viabilidades::find($fields->id);
                 if (!$viabilidade) return false;
+                if (!$this->verificarAcessoEmpreendimento($viabilidade->empreendimento_id)) {
+                    return false;
+                }
             }
 
             $viabilidade->unidades_venda               = $fields->unidadesVenda;
@@ -113,6 +143,9 @@ class ViabilidadeBO {
 
             $viabilidade = Viabilidades::find($id);
             if (!$viabilidade) return false;
+            if (!$this->verificarAcessoEmpreendimento($viabilidade->empreendimento_id)) {
+                return false;
+            }
 
             Viabilidades::query()
                 ->where('empreendimento_id', $viabilidade->empreendimento_id)
@@ -145,6 +178,9 @@ class ViabilidadeBO {
 
             $viabilidade = Viabilidades::find($id);
             if (!$viabilidade) return false;
+            if (!$this->verificarAcessoEmpreendimento($viabilidade->empreendimento_id)) {
+                return false;
+            }
 
             $viabilidade->deleted_by = $userId;
             $viabilidade->save();

@@ -6,6 +6,7 @@ use App\AUni\Bean\ILogger;
 use App\AUni\Utilities\Email;
 use App\Models\UsersTable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class TwoFactorBO {
 
@@ -24,7 +25,7 @@ class TwoFactorBO {
     public function generateAndSend(UsersTable $user): void {
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        $user->two_factor_code       = $code;
+        $user->two_factor_code       = Hash::make($code);
         $user->two_factor_expires_at = now()->addMinutes(self::CODE_EXPIRY_MINUTES);
         $user->two_factor_attempts   = 0;
         $user->save();
@@ -61,7 +62,7 @@ class TwoFactorBO {
         }
 
         // Código incorreto
-        if ($user->two_factor_code !== trim($code)) {
+        if (!$user->two_factor_code || !Hash::check(trim($code), $user->two_factor_code)) {
             $user->two_factor_attempts++;
             $user->save();
 

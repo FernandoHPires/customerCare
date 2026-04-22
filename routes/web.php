@@ -23,12 +23,12 @@ Route::group(['middleware' => 'noAuthentication'], function () {
         return view('login');
     });
 
-    //Login
-    Route::post('api/login', [LoginController::class, 'login']);
+    //Login — máx. 10 tentativas por minuto por IP
+    Route::post('api/login', [LoginController::class, 'login'])->middleware('throttle:10,1');
 
     // 2FA (parte do fluxo de login — sem autenticação completa ainda)
-    Route::post('api/two-factor/verify', [TwoFactorController::class, 'verify']);
-    Route::post('api/two-factor/resend', [TwoFactorController::class, 'resend']);
+    Route::post('api/two-factor/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:10,1');
+    Route::post('api/two-factor/resend', [TwoFactorController::class, 'resend'])->middleware('throttle:3,1');
 
     // Convite — link enviado por e-mail (acesso sem autenticação prévia)
     Route::get('convite/{token}', [InviteController::class, 'accept']);

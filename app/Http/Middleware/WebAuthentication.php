@@ -19,9 +19,8 @@ class WebAuthentication {
             Session::getId(),
             $request->ip(),
             $request->method(),
-            $request->path(), 
+            $request->path(),
             Auth::user()->user_id ?? null,
-            json_encode($request->all())
         ]);
         
         if(Auth::check()) {

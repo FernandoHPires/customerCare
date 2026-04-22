@@ -39,7 +39,6 @@ class UserBO {
                 'lastName'       => $value->user_lname,
                 'email'          => $value->user_email,
                 'userDepartment' => $value->user_dept,
-                'isAdmin'        => $value->admin,
                 'companyId'      => $value->default_company_id,
                 'perfilId'       => $value->perfil_id,
             ];
@@ -72,7 +71,6 @@ class UserBO {
             'firstName'         => $userObj->user_fname,
             'lastName'          => $userObj->user_lname,
             'email'             => $userObj->user_email,
-            'isAdmin'           => $userObj->admin,
             'companyId'         => $userObj->default_company_id,
             'companyName'       => $userObj->company_name,
             'activeCompanyId'   => $userObj->active_company_id,
@@ -144,7 +142,6 @@ class UserBO {
                 'companyName' => $value->company_name,
                 'perfilId'    => $value->perfil_id,
                 'perfilNome'  => $value->perfil_nome,
-                'isAdmin'          => $value->admin,
                 'twoFactorEnabled' => (bool) $value->two_factor_enabled,
             ];
         }
@@ -239,7 +236,6 @@ class UserBO {
             $user->user_dept          = $fields->dept ?? '';
             $user->default_company_id = $fields->companyId;
             $user->perfil_id          = $fields->perfilId ?? null;
-            $user->admin              = $fields->isAdmin ? 1 : 0;
             $user->two_factor_enabled = $fields->twoFactorEnabled ? 1 : 0;
             $user->save();
 

@@ -19,7 +19,6 @@ class NoAuthentication {
             $request->ip(),
             $request->method(),
             $request->path(),
-            json_encode($request->all())
         ]);
 
         return $next($request);
