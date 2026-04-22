@@ -54,14 +54,21 @@ return Application::configure(basePath: dirname(__DIR__))
         // Nunca exibe senha nos flashes de validação
         $exceptions->dontFlash(['password', 'password_confirmation', 'current_password']);
 
-        // Envia email com o erro em produção
+        // Envia email com o erro em produção — detalhes completos estão no log do servidor
         $exceptions->report(function (\Throwable $e) {
             if (env('APP_ENV') === 'production') {
                 $sessionKey = session('session_key');
+
                 \App\AUni\Utilities\Utils::sendEmail(
                     ['fhpires9@gmail.com'],
-                    env('APP_ENV') . ' - UNI Error',
-                    $sessionKey . ' | ' . $e->getMessage() . ' | ' . $e->getTraceAsString()
+                    'UNI Error - ' . class_basename($e),
+                    implode("\n", [
+                        'Sessão : ' . $sessionKey,
+                        'Erro   : ' . $e->getMessage(),
+                        'Arquivo: ' . basename($e->getFile()) . ':' . $e->getLine(),
+                        '',
+                        'Consulte o log do servidor para o stack trace completo.',
+                    ])
                 );
             }
         });

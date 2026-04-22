@@ -17,7 +17,7 @@
 
                 <div class="modal-body">
                     <div class="text-center">
-                        <h5 class="my-3" v-html="message"></h5>
+                        <h5 class="my-3">{{ message }}</h5>
                     </div>
                 </div>
 

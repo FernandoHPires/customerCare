@@ -24,7 +24,7 @@ class SsoAuthentication {
             json_encode($request->all())
         ]);
         
-        if(Auth::check() || env('APP_ENV') != 'production') {
+        if(Auth::check()) {
             $request->session()->put('redirect', '');
             return $next($request);
         }

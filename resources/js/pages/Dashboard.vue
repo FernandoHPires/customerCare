@@ -4,8 +4,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-logo">
-                <img src="/images/logo-uni.png" alt="UNI" class="logo-img" onerror="this.style.display='none'" />
-                <div class="logo-text">UNI<br><small>Gestão de Negócios</small></div>
+                <div class="client-name">{{ nomeCliente }}</div>
             </div>
 
             <div class="filter-section">
@@ -230,6 +229,10 @@ export default {
 
         isTodasMode() {
             return this.projects.length > 0 && this.projects[0].isTodas === true
+        },
+        nomeCliente() {
+            if (this.isTodasMode) return 'Portfólio Geral'
+            return this.projects[0]?.clienteNome || ''
         },
 
         // --- Breakdown ---
@@ -612,20 +615,12 @@ export default {
     padding-bottom: 12px;
     border-bottom: 1px solid #3A7A95;
 }
-.logo-img {
-    max-width: 80px;
-    margin-bottom: 4px;
-}
-.logo-text {
-    font-size: 15px;
+.client-name {
+    font-size: 13px;
     font-weight: bold;
     color: #F0F9F8;
-    line-height: 1.2;
-}
-.logo-text small {
-    font-size: 9px;
-    font-weight: normal;
-    color: #CCECF5;
+    line-height: 1.3;
+    word-break: break-word;
 }
 
 .filter-section { margin-bottom: 6px; }

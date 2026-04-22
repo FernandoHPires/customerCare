@@ -23,6 +23,19 @@ class SecurityHeaders {
         // Não envia o referer completo para outros domínios
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
+        // Restringe origens de scripts, estilos, imagens e conexões (CSP)
+        $response->headers->set('Content-Security-Policy', implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' https://challenges.cloudflare.com",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: blob:",
+            "font-src 'self'",
+            "connect-src 'self'",
+            "frame-src https://challenges.cloudflare.com",
+            "object-src 'none'",
+            "base-uri 'self'",
+        ]));
+
         // Em produção, força HTTPS por 1 ano
         if (app()->environment('production')) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');

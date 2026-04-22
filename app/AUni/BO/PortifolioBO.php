@@ -81,7 +81,8 @@ class PortifolioBO {
 
             $empreendimentos = Empreendimentos::query()
                 ->where('cliente_id', $clientes->id)
-                ->get();
+                ->get()
+                ->each(fn($emp) => $emp->cliente_nome = $clientes->nome);
         }
 
         $isTodas = $isUniUser && $activeCompanyId !== null && (int)$activeCompanyId === 0;

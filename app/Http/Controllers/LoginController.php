@@ -77,6 +77,11 @@ class LoginController extends Controller {
             $redirect .= '?' . http_build_query($fields);
         }
 
+        // Garante que o redirect é sempre uma URL relativa (evita Open Redirect)
+        if (!empty($redirect) && !str_starts_with($redirect, '/')) {
+            $redirect = '/';
+        }
+
         $this->logger->info('LoginController->federationLogin', ['token' => $token, 'redirect' => $redirect]);
 
         if(!Auth::check()) {

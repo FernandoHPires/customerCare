@@ -31,7 +31,7 @@ Route::group(['middleware' => 'noAuthentication'], function () {
     Route::post('api/two-factor/resend', [TwoFactorController::class, 'resend'])->middleware('throttle:3,1');
 
     // Convite — link enviado por e-mail (acesso sem autenticação prévia)
-    Route::get('convite/{token}', [InviteController::class, 'accept']);
+    Route::get('convite/{token}', [InviteController::class, 'accept'])->middleware('throttle:20,1');
 
 });
 
@@ -49,18 +49,22 @@ Route::group(['middleware' => 'webAuthentication'], function () {
     Route::delete('web/client-view', [ClientViewController::class, 'clear']);
     Route::get('web/menus', [UserController::class, 'getMenus']);
 
-    Route::post('/web/alterar-senha', [AlterarSenhaController::class, 'alterarSenha']);
+    Route::post('/web/alterar-senha', [AlterarSenhaController::class, 'alterarSenha'])->middleware('throttle:5,1');
 
-    Route::get('/web/perfis', [PerfilController::class, 'getPerfis']);
-    Route::post('/web/perfil', [PerfilController::class, 'savePerfil']);
-    Route::delete('/web/perfil/{id}', [PerfilController::class, 'deletePerfil']);
+    // ── Perfis — somente quem tem acesso ao menu /perfis ─────────────────
+    Route::get('/web/perfis', [PerfilController::class, 'getPerfis'])->middleware('accessRight:/perfis');
+    Route::post('/web/perfil', [PerfilController::class, 'savePerfil'])->middleware('accessRight:/perfis');
+    Route::delete('/web/perfil/{id}', [PerfilController::class, 'deletePerfil'])->middleware('accessRight:/perfis');
 
-    Route::get('/web/permissoes', [PermissaoController::class, 'getPermissoes']);
-    Route::get('/web/permissao/{perfilId}', [PermissaoController::class, 'getMenusPerfil']);
-    Route::post('/web/permissao/{perfilId}', [PermissaoController::class, 'savePermissao']);
-    Route::get('/web/usuarios', [UserController::class, 'getUsers']);
-    Route::post('/web/usuario', [UserController::class, 'saveUser']);
-    Route::delete('/web/usuario/{id}', [UserController::class, 'deleteUser']);
+    // ── Permissões — somente quem tem acesso ao menu /permissoes ─────────
+    Route::get('/web/permissoes', [PermissaoController::class, 'getPermissoes'])->middleware('accessRight:/permissoes');
+    Route::get('/web/permissao/{perfilId}', [PermissaoController::class, 'getMenusPerfil'])->middleware('accessRight:/permissoes');
+    Route::post('/web/permissao/{perfilId}', [PermissaoController::class, 'savePermissao'])->middleware('accessRight:/permissoes');
+
+    // ── Usuários — somente quem tem acesso ao menu /usuarios ─────────────
+    Route::get('/web/usuarios', [UserController::class, 'getUsers'])->middleware('accessRight:/usuarios');
+    Route::post('/web/usuario', [UserController::class, 'saveUser'])->middleware('accessRight:/usuarios');
+    Route::delete('/web/usuario/{id}', [UserController::class, 'deleteUser'])->middleware('accessRight:/usuarios');
 
 
   
@@ -79,11 +83,12 @@ Route::group(['middleware' => 'webAuthentication'], function () {
     Route::get('/web/simulacao', [SimulacaoController::class, 'getSimulacao']);
     Route::post('/web/simulacao', [SimulacaoController::class, 'saveSimulacao']);
 
-    Route::get('/web/clientes', [ClienteController::class, 'getClientes']);
-    Route::post('/web/cliente', [ClienteController::class, 'saveCliente']);
-    Route::delete('/web/cliente/{id}', [ClienteController::class, 'deleteCliente']);
+    // ── Clientes — somente quem tem acesso ao menu /clientes ─────────────
+    Route::get('/web/clientes', [ClienteController::class, 'getClientes'])->middleware('accessRight:/clientes');
+    Route::post('/web/cliente', [ClienteController::class, 'saveCliente'])->middleware('accessRight:/clientes');
+    Route::delete('/web/cliente/{id}', [ClienteController::class, 'deleteCliente'])->middleware('accessRight:/clientes');
 
-    Route::post('/web/usuario/{userId}/enviar-convite', [InviteController::class, 'send']);
+    Route::post('/web/usuario/{userId}/enviar-convite', [InviteController::class, 'send'])->middleware('accessRight:/usuarios');
 
     
 
