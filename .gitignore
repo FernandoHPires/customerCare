@@ -16,8 +16,8 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+/.claude
 *.env
 /public/mix-manifest.json
-package-lock.json
 composer.lock
 public/mix-manifest.json
