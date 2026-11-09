@@ -18,6 +18,7 @@ class UserBO {
 
     private $logger;
     private $menuList = [];
+    private $administradores = [1, 2, 3];
 
     public function __construct(ILogger $logger) {
         $this->logger = $logger;
@@ -94,6 +95,7 @@ class UserBO {
             $user->save();
         } else {
             $user = new UsersTable();
+            $user->is_uni_user   = 'N';
             $user->user_password = ' ';
             $user->user_phone    = ' ';
             $user->user_name     = $username;
@@ -143,6 +145,7 @@ class UserBO {
                 'perfilId'    => $value->perfil_id,
                 'perfilNome'  => $value->perfil_nome,
                 'twoFactorEnabled' => (bool) $value->two_factor_enabled,
+                'isUniUser'   => $value->is_uni_user === 'S',
             ];
         }
 
@@ -237,6 +240,13 @@ class UserBO {
             $user->default_company_id = $fields->companyId;
             $user->perfil_id          = $fields->perfilId ?? null;
             $user->two_factor_enabled = $fields->twoFactorEnabled ? 1 : 0;
+
+            if (in_array((int) $loggedUserId, $this->administradores, true) && property_exists($fields, 'isUniUser')) {
+                $user->is_uni_user = $fields->isUniUser ? 'S' : 'N';
+            } elseif ($fields->action == 'Adicionar') {
+                $user->is_uni_user = 'N';
+            }
+
             $user->save();
 
             DB::commit();

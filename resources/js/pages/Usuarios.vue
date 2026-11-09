@@ -245,14 +245,14 @@
 
                         <!-- Autenticação em dois fatores -->
                         <div class="col-12">
-                            <div class="two-factor-box" :class="{ 'two-factor-disabled': !emailValido }">
+                            <div class="two-factor-box two-factor-disabled">
                                 <div class="form-check form-switch mb-1">
                                     <input
                                         class="form-check-input"
                                         type="checkbox"
                                         id="chkTwoFactor"
-                                        v-model="form.twoFactorEnabled"
-                                        :disabled="!emailValido"
+                                        :checked="false"
+                                        disabled
                                     />
                                     <label class="form-check-label" for="chkTwoFactor">
                                         <i class="bi-shield-lock me-1"></i>
@@ -266,6 +266,27 @@
                                     <span v-else class="text-muted">
                                         Quando ativo, um código será enviado ao e-mail do usuário a cada login.
                                     </span>
+                                </small>
+                                <small class="d-block text-muted fst-italic">(Em desenvolvimento)</small>
+                            </div>
+                        </div>
+
+                        <div class="col-12" v-if="ehAdministrador">
+                            <div class="two-factor-box">
+                                <div class="form-check form-switch mb-1">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="chkUniUser"
+                                        v-model="form.isUniUser"
+                                    />
+                                    <label class="form-check-label" for="chkUniUser">
+                                        <i class="bi-building me-1"></i>
+                                        Funcionário Uni
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    Quando ativo, o usuário vê todas as empresas e filiais.
                                 </small>
                             </div>
                         </div>
@@ -352,6 +373,10 @@ export default {
         };
     },
     computed: {
+        ehAdministrador() {
+            const usuario = this.getUser();
+            return !!usuario && [1, 2, 3].includes(Number(usuario.id));
+        },
         req() {
             const s = this.form.password;
             return {
@@ -407,6 +432,7 @@ export default {
                 companyId: null,
                 perfilId: null,
                 twoFactorEnabled: false,
+                isUniUser:        false,
                 password:         '',
                 passwordConfirm:  '',
             };
@@ -461,7 +487,8 @@ export default {
                     dept:            row.dept,
                     companyId:       row.companyId,
                     perfilId:        row.perfilId,
-                    twoFactorEnabled: !!row.twoFactorEnabled,
+                    twoFactorEnabled: false,
+                    isUniUser:        !!row.isUniUser,
                     password:         '',
                     passwordConfirm:  '',
                 };
