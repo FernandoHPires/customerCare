@@ -39,13 +39,13 @@
                     <button
                         type="button"
                         class="filtro-flag"
-                        :class="{ 'filtro-flag--ativa': recebiveisFuturos }"
-                        :aria-pressed="recebiveisFuturos"
-                        title="Considera somente os títulos que vencem a partir de amanhã."
-                        @click="recebiveisFuturos = !recebiveisFuturos"
+                        :class="{ 'filtro-flag--ativa': recebiveisD1 }"
+                        :aria-pressed="recebiveisD1"
+                        title="Considera os títulos com vencimento um dia antes do período, pois o valor entra na conta no dia seguinte."
+                        @click="recebiveisD1 = !recebiveisD1"
                     >
-                        <i :class="recebiveisFuturos ? 'bi-check-square-fill' : 'bi-square'"></i>
-                        Vencimentos a partir de {{ dataAmanha }}
+                        <i :class="recebiveisD1 ? 'bi-check-square-fill' : 'bi-square'"></i>
+                        Contas a Receber (D-1)
                     </button>
                 </div>
                 <div class="filtro-grupo filtro-acao">
@@ -233,7 +233,7 @@ export default {
             dados: {},
             erro: null,
             consultado: false,
-            recebiveisFuturos: false,
+            recebiveisD1: false,
             idEmpreendimento: null,
             empreendimentos: [],
             contasReceber: 'CRR',
@@ -241,11 +241,6 @@ export default {
         };
     },
     computed: {
-        dataAmanha() {
-            const amanha = new Date();
-            amanha.setDate(amanha.getDate() + 1);
-            return amanha.toLocaleDateString('pt-BR');
-        },
         empreendimentoOptions() {
             return this.empreendimentos.map((e) => ({ id: e.codigo, label: e.codigo + ' - ' + e.descricao }));
         },
@@ -254,10 +249,12 @@ export default {
         },
         receber() {
             const itens = this.dados.receber || [];
-            if (!this.recebiveisFuturos) return itens;
+            if (!this.consulta) return itens;
 
-            const hoje = this.formatarData(new Date());
-            return itens.filter((item) => item.dia > hoje);
+            const inicio = this.recebiveisD1 ? this.diaAnterior(this.consulta.dataInicial) : this.consulta.dataInicial;
+            const fim = this.recebiveisD1 ? this.diaAnterior(this.consulta.dataFinal) : this.consulta.dataFinal;
+
+            return itens.filter((item) => !item.dia || (item.dia >= inicio && item.dia <= fim));
         },
         pagar() {
             return this.dados.pagar || [];
@@ -383,15 +380,17 @@ export default {
             this.idEmpreendimento = this.empreendimentos.length === 1 ? this.empreendimentos[0].codigo : null;
         },
 
+        diaAnterior(dia) {
+            const [ano, mes, dd] = dia.split('-').map(Number);
+            return this.formatarData(new Date(ano, mes - 1, dd - 1));
+        },
+
         baixarPlanilha() {
             if (!this.consulta) {
                 this.alertMessage = 'Clique em Atualizar antes de baixar a planilha.';
                 this.showAlert('error');
                 return;
             }
-
-            const amanha = new Date();
-            amanha.setDate(amanha.getDate() + 1);
 
             this.showPreLoader();
 
@@ -409,7 +408,7 @@ export default {
                     filtros: {
                         ...this.consulta,
                         saldoInicial: this.saldoInicial,
-                        dataCorte: this.recebiveisFuturos ? this.formatarData(amanha) : null,
+                        recebiveisD1: this.recebiveisD1,
                     },
                 },
             })

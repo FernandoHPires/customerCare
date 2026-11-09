@@ -50,10 +50,12 @@ class PlanilhaFluxoCaixaBO {
             return false;
         }
 
-        $dataCorte = DateTime::createFromFormat('!Y-m-d', (string) ($filtros['dataCorte'] ?? '')) ?: null;
+        $recebiveisD1 = filter_var($filtros['recebiveisD1'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $inicioReceber = $recebiveisD1 ? (clone $inicio)->modify('-1 day') : $inicio;
+        $fimReceber = $recebiveisD1 ? (clone $fim)->modify('-1 day') : $fim;
 
-        $receber = $this->separarPorCorte($dados['receber'] ?? [], $dataCorte);
-        $receberNaoConsiderados = $this->ordenarPorDia(array_merge($dados['receberNaoConsiderados'] ?? [], $receber['naoConsiderados']));
+        $receber = ['considerados' => $this->filtrarPeriodo($dados['receber'] ?? [], $inicioReceber, $fimReceber)];
+        $receberNaoConsiderados = $this->filtrarPeriodo($dados['receberNaoConsiderados'] ?? [], $inicioReceber, $fimReceber);
         $pagar = $dados['pagar'] ?? [];
         $pagarNaoConsiderados = $dados['pagarNaoConsiderados'] ?? [];
 
@@ -89,25 +91,15 @@ class PlanilhaFluxoCaixaBO {
         ];
     }
 
-    private function separarPorCorte($itens, $dataCorte) {
+    private function filtrarPeriodo($itens, DateTime $inicio, DateTime $fim) {
 
-        if (!$dataCorte) {
-            return ['considerados' => $itens, 'naoConsiderados' => []];
-        }
+        $primeiroDia = $inicio->format('Y-m-d');
+        $ultimoDia = $fim->format('Y-m-d');
 
-        $corte = $dataCorte->format('Y-m-d');
-        $resultado = ['considerados' => [], 'naoConsiderados' => []];
-
-        foreach ($itens as $item) {
-            if (($item['dia'] ?? '') >= $corte) {
-                $resultado['considerados'][] = $item;
-            } else {
-                $item['motivo'] = 'Vencimento antes de ' . $dataCorte->format('d/m/Y') . ' (filtro da tela)';
-                $resultado['naoConsiderados'][] = $item;
-            }
-        }
-
-        return $resultado;
+        return array_values(array_filter($itens, function ($item) use ($primeiroDia, $ultimoDia) {
+            $dia = $item['dia'] ?? '';
+            return $dia === '' || ($dia >= $primeiroDia && $dia <= $ultimoDia);
+        }));
     }
 
     private function ordenarPorDia($itens) {

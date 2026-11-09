@@ -132,10 +132,11 @@ class FinanceiroBO {
 
         $usaContasReceber = in_array($dados['contasReceber'], ['COR', 'CRR']);
         $usaCarteira = in_array($dados['contasReceber'], ['CAR', 'CRR']);
+        $inicioReceber = (clone $inicio)->modify('-1 day');
 
         $parcelasReceber = [];
         if ($usaContasReceber) {
-            $parcelasReceber = $megaBO->getFaturasReceberPorFilial($filialConsulta, $inicio->format('Y-m-d'), $fim->format('Y-m-d'));
+            $parcelasReceber = $megaBO->getFaturasReceberPorFilial($filialConsulta, $inicioReceber->format('Y-m-d'), $fim->format('Y-m-d'));
             if ($parcelasReceber === false) {
                 return false;
             }
@@ -165,7 +166,7 @@ class FinanceiroBO {
         }
 
         $titulosReceber = $this->montarFluxo($parcelasReceber ?: []);
-        $parcelasCarteira = $this->montarCarteira($carteira, $inicio, $fim);
+        $parcelasCarteira = $this->montarCarteira($carteira, $inicioReceber, $fim);
         $titulosPagar = $this->montarFluxo($parcelasPagar ?: []);
 
         $dados['receber'] = $this->ordenarPorDia(array_merge($titulosReceber['considerados'], $parcelasCarteira['considerados']));
