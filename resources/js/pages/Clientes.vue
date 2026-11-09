@@ -35,6 +35,7 @@
                         <th>CNPJ</th>
                         <th>E-mail</th>
                         <th>Telefone</th>
+                        <th>Filial</th>
                         <th>Status</th>
                         <th></th>
                     </tr>
@@ -42,7 +43,7 @@
 
                 <tbody v-if="filteredData.length === 0">
                     <tr>
-                        <td colspan="7">Nenhum cliente encontrado.</td>
+                        <td colspan="8">Nenhum cliente encontrado.</td>
                     </tr>
                 </tbody>
 
@@ -53,6 +54,7 @@
                         <td>{{ formatCnpj(row.cnpj) }}</td>
                         <td>{{ row.email }}</td>
                         <td>{{ formatPhone(row.telefone) }}</td>
+                        <td>{{ row.filialNome || row.filial }}</td>
                         <td>
                             <span
                                 class="badge"
@@ -156,6 +158,14 @@
                                 <option value="I">Inativo</option>
                             </select>
                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Filial</label>
+                            <SearchableSelect
+                                v-model="form.filial"
+                                :options="filialOptions"
+                                placeholder="Pesquisar filial..."
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -186,14 +196,16 @@
 <script>
 import { util } from '../mixins/util';
 import ConfirmationDialog from '../components/ConfirmationDialog.vue';
+import SearchableSelect from '../components/SearchableSelect.vue';
 
 export default {
     mixins: [util],
-    components: { ConfirmationDialog },
+    components: { ConfirmationDialog, SearchableSelect },
     name: 'clientes-page',
     data() {
         return {
             clientes: [],
+            filiais: [],
             search: '',
             modalAction: 'Adicionar',
             form: this.emptyForm(),
@@ -204,6 +216,9 @@ export default {
         };
     },
     computed: {
+        filialOptions() {
+            return this.filiais.map((f) => ({ id: f.codigo, label: f.codigo + ' - ' + f.nome }));
+        },
         filteredData() {
             const search = this.search && this.search.toLowerCase();
             if (!search) return this.clientes;
@@ -216,6 +231,7 @@ export default {
     },
     mounted() {
         this.getClientes();
+        this.getFiliais();
     },
     methods: {
         emptyForm() {
@@ -227,6 +243,7 @@ export default {
                 email: '',
                 telefone: '',
                 status: 'A',
+                filial: null,
             };
         },
 
@@ -243,6 +260,16 @@ export default {
                 })
                 .catch(() => {})
                 .finally(() => this.hidePreLoader());
+        },
+
+        getFiliais() {
+            this.axios({ method: 'get', url: '/web/filiais/opcoes' })
+                .then((response) => {
+                    if (this.checkApiResponse(response)) {
+                        this.filiais = response.data.data;
+                    }
+                })
+                .catch(() => {});
         },
 
         openModal(action, row) {

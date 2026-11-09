@@ -6,6 +6,7 @@ use App\AUni\Bean\ILogger;
 use App\AUni\Bean\IDB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Clientes;
+use App\Models\Filiais;
 
 class ClienteBO {
 
@@ -22,6 +23,7 @@ class ClienteBO {
         $this->logger->info('ClienteBO->getClientes', []);
 
         $clientes = Clientes::orderBy('nome', 'asc')->get();
+        $filiais = Filiais::pluck('nome', 'codigo');
 
         $result = [];
         foreach ($clientes as $c) {
@@ -33,6 +35,8 @@ class ClienteBO {
                 'email'        => $c->email,
                 'telefone'     => $c->telefone,
                 'status'       => $c->status,
+                'filial'       => $c->filial,
+                'filialNome'   => $filiais[$c->filial] ?? null,
             ];
         }
 
@@ -66,6 +70,7 @@ class ClienteBO {
             $cliente->email        = $fields->email;
             $cliente->telefone     = $fields->telefone;
             $cliente->status       = $fields->status ?? 'A';
+            $cliente->filial       = !empty($fields->filial) ? (int) $fields->filial : null;
             $cliente->save();
 
             $this->db->commit();

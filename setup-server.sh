@@ -35,12 +35,6 @@ echo ""
 
 read -p "Domínio do site (ex: seudominio.com.br): " DOMAIN
 read -p "Diretório do projeto (ex: /var/www/customercare): " APP_DIR
-read -p "Nome do banco de dados: " DB_NAME
-read -p "Usuário do banco de dados: " DB_USER
-read -s -p "Senha do banco de dados: " DB_PASS
-echo ""
-read -s -p "Senha do root do MySQL: " DB_ROOT_PASS
-echo ""
 
 echo ""
 info "Iniciando instalação..."
@@ -85,16 +79,7 @@ info "Instalando MySQL 8.0..."
 apt-get install -y -qq mysql-server
 systemctl enable mysql
 systemctl start mysql
-
-# Criar banco e usuário
-mysql -u root <<EOF
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_ROOT_PASS}';
-CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
-GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';
-FLUSH PRIVILEGES;
-EOF
-ok "MySQL instalado e banco criado"
+ok "MySQL instalado (banco/usuário serão criados manualmente depois)"
 
 # ── 5. Composer ───────────────────────────────────────────────────────────────
 info "Instalando Composer..."
@@ -149,33 +134,7 @@ chmod -R 775 "$APP_DIR/storage"
 chmod -R 775 "$APP_DIR/bootstrap/cache"
 ok "Permissões configuradas"
 
-# ── 11. Arquivo .env de produção ──────────────────────────────────────────────
-info "Criando .env de produção..."
-cat > "$APP_DIR/.env" <<EOF
-APP_NAME="UNI Gestão de Negócios"
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://${DOMAIN}
-
-LOG_CHANNEL=daily
-LOG_LEVEL=error
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=${DB_NAME}
-DB_USERNAME=${DB_USER}
-DB_PASSWORD=${DB_PASS}
-
-CACHE_DRIVER=file
-QUEUE_CONNECTION=database
-SESSION_DRIVER=file
-SESSION_LIFETIME=60
-SESSION_SECURE_COOKIE=true
-EOF
-ok ".env criado — complete as chaves restantes (APP_KEY, TURNSTILE, etc.)"
-
-# ── 12. Resumo final ──────────────────────────────────────────────────────────
+# ── 11. Resumo final ──────────────────────────────────────────────────────────
 echo ""
 echo "=================================================="
 echo -e "${GREEN}   Instalação concluída!${NC}"
@@ -183,20 +142,28 @@ echo "=================================================="
 echo ""
 echo "Próximos passos manuais:"
 echo ""
-echo "  1. Copie o projeto para: $APP_DIR"
-echo "  2. Dentro do projeto, rode:"
+echo "  1. Crie o banco de dados e o usuário no MySQL:"
 echo ""
-echo "       composer install --no-dev"
-echo "       npm install && npm run build"
+echo "       sudo mysql -u root"
+echo "       > CREATE DATABASE uni_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+echo "       > CREATE USER 'seu_usuario'@'localhost' IDENTIFIED BY 'sua_senha';"
+echo "       > GRANT ALL PRIVILEGES ON uni_db.* TO 'seu_usuario'@'localhost';"
+echo "       > FLUSH PRIVILEGES;"
+echo "       > EXIT;"
+echo ""
+echo "  2. Copie o projeto para: $APP_DIR"
+echo ""
+echo "  3. Crie o .env em $APP_DIR/.env (config completa: APP_KEY, DB_*, MAIL_*, TURNSTILE_*)"
+echo ""
+echo "  4. Dentro do projeto, rode:"
+echo ""
+echo "       composer install --no-dev --optimize-autoloader"
+echo "       npm install && npm run prod"
 echo "       php artisan key:generate"
-echo "       php artisan migrate --force"
 echo "       php artisan optimize"
 echo ""
-echo "  3. Ative o SSL:"
+echo "  5. Ative o SSL:"
 echo ""
 echo "       certbot --apache -d ${DOMAIN}"
-echo ""
-echo "  4. Complete o .env em: $APP_DIR/.env"
-echo "     (APP_KEY, TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, MAIL_*)"
 echo ""
 echo "=================================================="

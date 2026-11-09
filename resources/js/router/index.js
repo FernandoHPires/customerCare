@@ -8,10 +8,13 @@ import Login from '../views/Login.vue';
 //UNI
 import PortfolioView from '../pages/PortfolioView.vue';
 import Clientes from '../pages/Clientes.vue';
+import Filiais from '../pages/Filiais.vue';
 import Usuarios from '../pages/Usuarios.vue';
 import Perfis from '../pages/Perfis.vue';
 import Permissoes from '../pages/Permissoes.vue';
 import AlterarSenha from '../pages/AlterarSenha.vue';
+import DashboardFinanceiro from '../pages/DashboardFinanceiro.vue';
+import FluxoCaixa from '../pages/FluxoCaixa.vue';
 
 //catch-all
 import NotFound from '../pages/NotFound.vue';
@@ -41,6 +44,11 @@ const routes = [
         component: Clientes,
     },
     {
+        path: "/filiais",
+        name: "Filiais",
+        component: Filiais,
+    },
+    {
         path: "/usuarios",
         name: "Usuarios",
         component: Usuarios,
@@ -54,6 +62,16 @@ const routes = [
         path: "/permissoes",
         name: "Permissoes",
         component: Permissoes,
+    },
+    {
+        path: "/dashboard-financeiro",
+        name: "DashboardFinanceiro",
+        component: DashboardFinanceiro,
+    },
+    {
+        path: "/fluxo-caixa",
+        name: "FluxoCaixa",
+        component: FluxoCaixa,
     },
     {
         path: "/alterar-senha",

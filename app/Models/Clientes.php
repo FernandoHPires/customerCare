@@ -17,6 +17,7 @@ class Clientes extends ModelFingerprint {
         'email',
         'telefone',
         'status',
+        'filial',
         'created_by',
         'updated_by',
         'deleted_by',

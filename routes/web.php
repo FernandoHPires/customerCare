@@ -14,6 +14,8 @@ use App\Http\Controllers\PermissaoController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\ClientViewController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\MegaController;
+use App\Http\Controllers\FilialController;
 
 
 
@@ -88,7 +90,24 @@ Route::group(['middleware' => 'webAuthentication'], function () {
     Route::post('/web/cliente', [ClienteController::class, 'saveCliente'])->middleware('accessRight:/clientes');
     Route::delete('/web/cliente/{id}', [ClienteController::class, 'deleteCliente'])->middleware('accessRight:/clientes');
 
+    Route::get('/web/filiais', [FilialController::class, 'getFiliais'])->middleware('accessRight:/filiais');
+    Route::get('/web/filiais/opcoes', [FilialController::class, 'getFiliais'])->middleware('accessRight:/clientes');
+    Route::post('/web/filial', [FilialController::class, 'saveFilial'])->middleware('accessRight:/filiais');
+    Route::delete('/web/filial/{id}', [FilialController::class, 'deleteFilial'])->middleware('accessRight:/filiais');
+    Route::get('/web/filial/{id}/empreendimentos', [FilialController::class, 'getEmpreendimentos'])->middleware('accessRight:/filiais');
+    Route::post('/web/filial-empreendimento', [FilialController::class, 'saveEmpreendimento'])->middleware('accessRight:/filiais');
+    Route::delete('/web/filial-empreendimento/{id}', [FilialController::class, 'deleteEmpreendimento'])->middleware('accessRight:/filiais');
+
     Route::post('/web/usuario/{userId}/enviar-convite', [InviteController::class, 'send'])->middleware('accessRight:/usuarios');
+
+    Route::get('/web/faturas-pagar', [MegaController::class, 'getFaturasPagar']);
+    Route::get('/web/faturas-pagar/em-aberto', [MegaController::class, 'getFaturasPagarEmAberto']);
+    Route::get('/web/faturas-pagar/filial/{filial}', [MegaController::class, 'getFaturasPagarPorFilial']);
+    Route::get('/web/faturas-pagar/agente/{agente}', [MegaController::class, 'getFaturasPagarPorAgente']);
+    Route::get('/web/dashboard-financeiro', [MegaController::class, 'getDashboardFaturasPagar'])->middleware('accessRight:/dashboard-financeiro');
+    Route::get('/web/fluxo-caixa', [MegaController::class, 'getFluxoCaixa'])->middleware('accessRight:/fluxo-caixa');
+    Route::get('/web/fluxo-caixa/filtros', [MegaController::class, 'getFiltrosFluxoCaixa'])->middleware('accessRight:/fluxo-caixa');
+    Route::post('/web/fluxo-caixa/planilha', [MegaController::class, 'baixarPlanilhaFluxoCaixa'])->middleware('accessRight:/fluxo-caixa');
 
     
 
